@@ -1,60 +1,164 @@
 # Nexus
 
-A professional, scalable freelance marketplace backend built with Django and Django REST Framework, featuring escrow-based payments, ticketing, real-time chat, and background task processing.
+A modern Freelance Marketplace Backend built with Django and Django REST Framework.
+
+---
+
+## About
+
+Nexus is a backend project for a freelance marketplace where clients can post projects and freelancers can submit proposals.
+
+This project is being developed step by step with production-ready architecture and modern backend practices.
+
+Current status: **Phase 1 completed**.
+
+---
 
 ## Tech Stack
 
-- **Language:** Python 3.12
-- **Framework:** Django + Django REST Framework
-- **Database:** PostgreSQL (planned)
-- **Cache/Broker:** Redis (planned)
-- **Task Queue:** Celery + Celery Beat (planned)
-- **Containerization:** Docker + Docker Compose (planned)
-- **Monitoring:** Sentry (planned)
+* Python 3.12
+* Django
+* Django REST Framework (DRF)
+* SQLite (temporary, PostgreSQL will be introduced in Phase 5)
 
-## Project Status
+---
 
-🚧 **Work in progress** — currently in early development (Phase 1: project foundation).
+## Project Setup
 
-## Getting Started
+### 1. Clone the repository
 
-### Prerequisites
-
-- Python 3.12
-- pip
-
-### Setup
-
-1. Clone the repository:
 ```bash
-   git clone <your-repo-url>
-   cd Nexus
+git clone <repository-url>
+cd Nexus
 ```
 
-2. Create and activate a virtual environment:
+### 2. Create a virtual environment
+
 ```bash
-   python -m venv venv
-   venv\Scripts\activate   # Windows
-   source venv/bin/activate  # macOS/Linux
+python -m venv venv
 ```
 
-3. Install dependencies:
+### 3. Activate the virtual environment
+
+Windows
+
 ```bash
-   pip install -r requirements.txt
+venv\Scripts\activate
 ```
 
-4. Run migrations:
+Linux / macOS
+
 ```bash
-   python manage.py migrate
+source venv/bin/activate
 ```
 
-5. Start the development server:
+### 4. Install dependencies
+
 ```bash
-   python manage.py runserver
+pip install -r requirements/base.txt
 ```
 
-6. Visit `http://127.0.0.1:8000` in your browser.
+### 5. Apply migrations
+
+```bash
+python manage.py migrate
+```
+
+### 6. Create a superuser
+
+```bash
+python manage.py createsuperuser
+```
+
+### 7. Run the development server
+
+```bash
+python manage.py runserver
+```
+
+---
+
+## Health Check
+
+Endpoint
+
+```text
+GET /api/v1/health/
+```
+
+Example:
+
+```
+http://127.0.0.1:8000/api/v1/health/
+```
+
+Expected response
+
+```json
+{
+    "status": "ok",
+    "service": "Nexus"
+}
+```
+
+---
+
+## Django Admin
+
+```
+http://127.0.0.1:8000/admin/
+```
+
+Login using your superuser credentials.
+
+---
+
+## Current Features
+
+* Custom User Model
+* Role-based users (Client / Freelancer)
+* Client Profile
+* Freelancer Profile
+* Django Admin configuration
+* Health Check API
+* REST API foundation
+* API Versioning (/api/v1/)
+
+---
+
+## Project Structure
+
+```
+apps/
+    accounts/
+core/
+config/
+requirements/
+http/
+```
+
+---
+
+## Development Roadmap
+
+### ✅ Phase 1
+
+* Project foundation
+* Custom User
+* Profiles
+* Admin configuration
+* Health Check API
+
+### 🚧 Phase 2
+
+* Project CRUD
+* Proposal system
+* Object permissions
+* Filtering
+* Pagination
+
+---
 
 ## License
 
-This project is for portfolio purposes.
+This project is being developed for educational and portfolio purposes.
