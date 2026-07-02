@@ -27,6 +27,8 @@ INSTALLED_APPS = [
     'rest_framework',
 
     'apps.accounts.apps.AccountsConfig',
+    'apps.core.apps.CoreConfig',
+    
 ]
 
 MIDDLEWARE = [
@@ -113,3 +115,16 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'accounts.CustomUser'
+
+REST_FRAMEWORK = {
+    # Phase 1: All endpoints are public for now.
+    # This will change to IsAuthenticated in Phase 3 (JWT Authentication).
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.AllowAny",
+    ],
+
+    # API should return JSON responses only.
+    "DEFAULT_RENDERER_CLASSES": [
+        "rest_framework.renderers.JSONRenderer",
+    ],
+}
