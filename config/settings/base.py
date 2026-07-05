@@ -118,13 +118,14 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'accounts.CustomUser'
 
 REST_FRAMEWORK = {
-    # Phase 1: All endpoints are public for now.
-    # This will change to IsAuthenticated in Phase 3 (JWT Authentication).
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 10,
+    
     "DEFAULT_PERMISSION_CLASSES": [
+        "django_filters.rest_framework.DjangoFilterBackend",
         "rest_framework.permissions.AllowAny",
     ],
 
-    # API should return JSON responses only.
     "DEFAULT_RENDERER_CLASSES": [
         "rest_framework.renderers.JSONRenderer",
     ],

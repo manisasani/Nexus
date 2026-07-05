@@ -1,9 +1,11 @@
 from rest_framework import viewsets, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from django_filters.rest_framework import DjangoFilterBackend
 
 from .models import Project
 from .permissions import IsClient, IsOwner
+from .filters import ProjectFilter
 from .serializers import (
     ProjectReadSerializer,
     ProjectCreateSerializer,
@@ -12,6 +14,8 @@ from .serializers import (
 
 class ProjectViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = ProjectFilter
 
     def get_permissions(self):
         if self.action == "create":
