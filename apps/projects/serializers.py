@@ -17,7 +17,8 @@ class ProjectReadSerializer(serializers.ModelSerializer):
 class ProjectCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
-        fields = ('title', 'description', 'budget', 'deadline')
+        fields = ('id', 'title', 'description', 'budget', 'deadline', 'status', 'owner')
+        read_only_fields = ('id', 'status', 'owner')
 
     def validate_deadline(self, deadline):
         if deadline < date.today():
@@ -114,7 +115,7 @@ class ProposalCreateSerializer(serializers.ModelSerializer):
             )
         except IntegrityError:
             raise serializers.ValidationError(
-                'You have already a proposal for ths project.'
+                'You have already submitted a proposal for this project.'
             )
 
 class ProposalUpdateSerializer(serializers.ModelSerializer):

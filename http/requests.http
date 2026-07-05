@@ -1,3 +1,163 @@
+@baseUrl = http://127.0.0.1:8000/api/v1
+@clientAuth = Basic client1@example.com clientpass123
+@freelancerAuth = Basic freelancer1@example.com freelancerpass123
+@otherClientAuth = Basic client2@example.com clientpass456
+
+### =========================================
 ### Health Check
-GET http://127.0.0.1:8000/api/v1/health/
+### =========================================
+GET {{baseUrl}}/health/
 Accept: application/json
+
+### =========================================
+### HAPPY PATH
+### =========================================
+
+### 1. CLIENT creates a project (defaults to DRAFT)
+# @name createProject
+POST {{baseUrl}}/projects/
+Authorization: {{clientAuth}}
+Content-Type: application/json
+
+{
+  "title": "Build a landing page",
+  "description": "Simple one-page site with a contact form",
+  "budget": "500.00",
+  "deadline": "2026-09-01"
+}
+
+### 2. CLIENT patches project status DRAFT -> OPEN
+# Replace {{projectId}} with the id returned from step 1
+PATCH {{baseUrl}}/projects/9/
+Authorization: {{clientAuth}}
+Content-Type: application/json
+
+{
+  "status": "OPEN"
+}
+
+### 3. CLIENT views their own projects (any status)
+GET {{baseUrl}}/projects/mine/
+Authorization: {{clientAuth}}
+
+### 4. FREELANCER lists OPEN projects
+GET {{baseUrl}}/projects/
+Authorization: {{freelancerAuth}}
+
+### 5. FREELANCER lists OPEN projects filtered by budget range
+GET {{baseUrl}}/projects/?status=OPEN&budget_min=100&budget_max=1000
+Authorization: {{freelancerAuth}}
+
+### 6. FREELANCER submits a proposal on the OPEN project
+POST {{baseUrl}}/projects/9/proposals/
+Authorization: {{freelancerAuth}}
+Content-Type: application/json
+
+{
+  "cover_letter": "I can build this in 3 days with a responsive layout.",
+  "bid_amount": "450.00"
+}
+
+### 7. CLIENT (owner) lists all proposals on their project
+GET {{baseUrl}}/projects/9/proposals/
+Authorization: {{clientAuth}}
+
+### 8. FREELANCER edits their own PENDING proposal
+PATCH {{baseUrl}}/projects/9/proposals/2/
+Authorization: {{freelancerAuth}}
+Content-Type: application/json
+
+{
+  "bid_amount": "400.00",
+  "cover_letter": "Updated: I can build this in 2 days."
+}
+
+### 9. CLIENT accepts the proposal
+POST {{baseUrl}}/projects/9/proposals/2/accept/
+Authorization: {{clientAuth}}
+
+### =========================================
+### FAILURE PATHS
+### =========================================
+
+### F1. FREELANCER tries to create a project -> expect 403
+POST {{baseUrl}}/projects/
+Authorization: {{freelancerAuth}}
+Content-Type: application/json
+
+{
+  "title": "Should not be allowed",
+  "description": "Freelancers cannot create projects",
+  "budget": "100.00",
+  "deadline": "2026-09-01"
+}
+
+### F2. CLIENT tries to propose on their own project -> expect 400/403
+POST {{baseUrl}}/projects/1/proposals/
+Authorization: {{clientAuth}}
+Content-Type: application/json
+
+{
+  "cover_letter": "Trying to bid on my own project",
+  "bid_amount": "300.00"
+}
+
+### F3. FREELANCER submits duplicate proposal on same project -> expect 400
+POST {{baseUrl}}/projects/1/proposals/
+Authorization: {{freelancerAuth}}
+Content-Type: application/json
+
+{
+  "cover_letter": "Second attempt, should fail",
+  "bid_amount": "420.00"
+}
+
+### F4. Different CLIENT tries to update another client's project -> expect 403/404
+PATCH {{baseUrl}}/projects/1/
+Authorization: {{otherClientAuth}}
+Content-Type: application/json
+
+{
+  "title": "Trying to hijack this project"
+}
+
+### F5. FREELANCER tries to create a proposal on a DRAFT project -> expect 400
+# First create a fresh DRAFT project as client, then try proposing on it as freelancer
+# @name createDraftProject
+POST {{baseUrl}}/projects/
+Authorization: {{clientAuth}}
+Content-Type: application/json
+
+{
+  "title": "Build a landing page",
+  "description": "Simple one-page site with a contact form",
+  "budget": "500.00",
+  "deadline": "2026-09-01"
+}
+
+###
+POST {{baseUrl}}/projects/2/proposals/
+Authorization: {{freelancerAuth}}
+Content-Type: application/json
+
+{
+  "cover_letter": "Trying to bid on a draft project",
+  "bid_amount": "150.00"
+}
+
+### F6. FREELANCER tries to edit a proposal that's not PENDING anymore -> expect 403
+PATCH {{baseUrl}}/projects/1/proposals/1/
+Authorization: {{freelancerAuth}}
+Content-Type: application/json
+
+{
+  "bid_amount": "999.00"
+}
+
+### F7. Non-owner freelancer tries to view another freelancer's proposal on same project
+# (requires a second freelancer user + their own proposal on project 1)
+GET {{baseUrl}}/projects/1/proposals/
+Authorization: {{otherClientAuth}}
+
+
+

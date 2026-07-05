@@ -49,7 +49,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
         
         return qs
 
-    @action(detail=True, methods=["get"], url_path="mine")
+    @action(detail=False, methods=["get"], url_path="mine") 
     def mine(self, request):
         qs = Project.objects.filter(owner=request.user)
         page = self.paginate_queryset(qs)
@@ -99,13 +99,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
         return context
 
     def perform_create(self, serializer):
-        project = get_object_or_404(Project, id=self.kwargs["project_id"])
-        try:
-            serializer.save(project=project, freelancer=self.request.user)
-        except IntegrityError:
-            raise ValidationError(
-                {"detail": "You already submitted a proposal on this project."}
-            )
+        serializer.save()
 
 
     @action(detail=True, methods=["post"], url_path="accept")
