@@ -1,14 +1,18 @@
 from datetime import date
-from sqlite3 import IntegrityError
+from django.db import IntegrityError
 
 from rest_framework import serializers
 from apps.projects.models import Project, Proposal
 
 
 class ProjectReadSerializer(serializers.ModelSerializer):
+    owner_email = serializers.EmailField(source="owner.email", read_only=True)
+
     class Meta:
         model = Project
-        fields = ('id', 'title', 'description', 'budget', 'deadline', 'status', 'created_at', 'updated_at')
+        fields = ('id', 'title', 'description', 'budget', 'deadline', 'status',
+                  'owner', 'owner_email', 'created_at', 'updated_at')
+        read_only_fields = ('owner',)
 
 class ProjectCreateSerializer(serializers.ModelSerializer):
     class Meta:
@@ -28,8 +32,8 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
 class ProjectUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
-        fields = ('title', 'description', 'budget', 'deadline', 'status')
-        read_only_fields = ('owner')
+        fields = ('title', 'owner', 'description', 'budget', 'deadline', 'status')
+        read_only_fields = ('owner',)
 
     def validate(self, data):
         current_status = self.instance.status
@@ -56,6 +60,7 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
     def validate_budget(self, budget):
         if budget <= 0:
             raise serializers.ValidationError('Budget must be greater than zero.')
+        return budget
 
     
 class ProposalReadSerializer(serializers.ModelSerializer):
@@ -65,8 +70,9 @@ class ProposalReadSerializer(serializers.ModelSerializer):
     )
     class Meta:
         model = Proposal
-        fields = ('id', 'project', 'freelancer', 'bid_amount', 'cover_letter', 'status', 'created_at', 'updated_at')
-        read_only_fields = ('freelancer','freelancer_email','status')
+        fields = ('id', 'project', 'freelancer', 'freelancer_email',
+                  'bid_amount', 'cover_letter', 'status', 'created_at', 'updated_at')
+        read_only_fields = ('freelancer', 'status')
 
 
 class ProposalCreateSerializer(serializers.ModelSerializer):
@@ -116,15 +122,25 @@ class ProposalUpdateSerializer(serializers.ModelSerializer):
         model = Proposal
         fields = ('bid_amount', 'cover_letter')
     
-    def validate(self, data):
-        instance = self.instance
-
-        if instance.status != Proposal.Status.PENDING:
-            raise serializers.ValidationError('You can only edit proposal that are PENDING.')
-        
-        return data
+    def validate(self, attrs):
+        if self.instance and self.instance.status != Proposal.Status.PENDING:
+            raise serializers.ValidationError(
+                {"detail": "Only pending proposals can be edited."}
+            )
+        return attrs
     
     def validate_bid_amount(self, bid_amount):
         if bid_amount <= 0:
             raise serializers.ValidationError('Bid amount must be greater than zero.')
         return bid_amount
+
+class ProposalStatusUpdateSerializer(serializers.Serializer):
+    status = serializers.ChoiceField(choices=["ACCEPTED", "REJECTED"])
+
+    def validate_status(self, value):
+        proposal = self.context["proposal"]
+        if proposal.status != Proposal.Status.PENDING:
+            raise serializers.ValidationError(
+                "Only pending proposals can be accepted or rejected."
+            )
+        return value

@@ -27,9 +27,9 @@ class Project(models.Model):
     def __str__(self):
         return self.title
 
-def clean(self):
-    if self.deadline and self.deadline < date.today():
-        raise ValidationError("Deadline cannot be in the past.")
+    def clean(self):
+        if self.deadline and self.deadline < date.today():
+            raise ValidationError("Deadline cannot be in the past.")
 
 
 class Proposal(models.Model):
