@@ -20,3 +20,10 @@ class LogoutView(APIView):
             return Response(status=status.HTTP_205_RESET_CONTENT)
         except Exception:
             return Response(status=status.HTTP_400_BAD_REQUEST)
+        
+class MeView(generics.RetrieveAPIView):
+    serializer_class = RegisterSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_object(self):
+        return self.request.user
