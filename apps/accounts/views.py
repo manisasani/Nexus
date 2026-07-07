@@ -2,12 +2,18 @@ from rest_framework import generics, permissions, status
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework_simplejwt.views import TokenObtainPairView
 
 from .serializers import PasswordChangeSerializer, RegisterSerializer
+from .throttles import LoginThrottle, RegisterThrottle
 
 class RegisterView(generics.CreateAPIView):
     serializer_class = RegisterSerializer
     permission_classes = [permissions.AllowAny]
+    throttle_classes = [RegisterThrottle]
+
+class ThrottledTokenObtainPairView(TokenObtainPairView):
+    throttle_classes = [LoginThrottle]
 
 class LogoutView(APIView):
     permission_classes = [permissions.IsAuthenticated]

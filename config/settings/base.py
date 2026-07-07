@@ -139,6 +139,14 @@ REST_FRAMEWORK = {
         "rest_framework.renderers.JSONRenderer",
         "rest_framework.renderers.BrowsableAPIRenderer",
     ],
+
+    "DEFAULT_THROTTLE_CLASSES": [],
+    
+    "DEFAULT_THROTTLE_RATES": {
+        "login": "5/min",
+        "register": "3/min",
+    },
+
 }
 
 SIMPLE_JWT = {
