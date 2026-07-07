@@ -26,4 +26,28 @@ class MeSerializer(serializers.ModelSerializer):
         model = CustomUser
         fields = ('id', 'email', 'role', 'phone', 'created_at')
         read_only_fields = ('id', 'email', 'role', 'phone', 'created_at')
-        
+
+
+class PasswordChangeSerializer(serializers.Serializer):
+    old_password = serializers.CharField(required=True, write_only=True)
+    new_password = serializers.CharField(
+        required=True,
+        write_only=True,
+        validators=[validate_password]
+    )
+
+    def validate(self, attrs):
+        user = self.context["request"].user
+
+        if not user.check_password(attrs["old_password"]):
+            raise serializers.ValidationError({
+                "old_password": "Old password is incorrect."
+            })
+
+        return attrs
+
+    def save(self):
+        user = self.context["request"].user
+        user.set_password(self.validated_data["new_password"])
+        user.save(update_fields=["password"])
+        return user
