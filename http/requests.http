@@ -1,7 +1,13 @@
 @baseUrl = http://127.0.0.1:8000/api/v1
-@clientAuth = Basic client1@example.com clientpass123
-@freelancerAuth = Basic freelancer1@example.com freelancerpass123
-@otherClientAuth = Basic client2@example.com clientpass456
+
+@clientEmail = client1@example.com
+@clientPassword = clientpass123
+
+@freelancerEmail = freelancer1@example.com
+@freelancerPassword = freelancerpass123
+
+@otherClientEmail = client2@example.com
+@otherClientPassword = clientpass456
 
 ### =========================================
 ### Health Check
@@ -10,13 +16,61 @@ GET {{baseUrl}}/health/
 Accept: application/json
 
 ### =========================================
+### AUTHENTICATION
+### =========================================
+
+### Login CLIENT
+# @name clientLogin
+POST {{baseUrl}}/auth/login/
+Content-Type: application/json
+
+{
+  "email": "{{clientEmail}}",
+  "password": "{{clientPassword}}"
+}
+
+###
+
+@clientToken = {{clientLogin.response.body.access}}
+
+
+### Login FREELANCER
+# @name freelancerLogin
+POST {{baseUrl}}/auth/login/
+Content-Type: application/json
+
+{
+  "email": "{{freelancerEmail}}",
+  "password": "{{freelancerPassword}}"
+}
+
+###
+
+@freelancerToken = {{freelancerLogin.response.body.access}}
+
+
+### Login OTHER CLIENT
+# @name otherClientLogin
+POST {{baseUrl}}/auth/login/
+Content-Type: application/json
+
+{
+  "email": "{{otherClientEmail}}",
+  "password": "{{otherClientPassword}}"
+}
+
+###
+
+@otherClientToken = {{otherClientLogin.response.body.access}}
+
+### =========================================
 ### HAPPY PATH
 ### =========================================
 
 ### 1. CLIENT creates a project (defaults to DRAFT)
 # @name createProject
 POST {{baseUrl}}/projects/
-Authorization: {{clientAuth}}
+Authorization: Bearer {{clientToken}}
 Content-Type: application/json
 
 {
@@ -29,7 +83,7 @@ Content-Type: application/json
 ### 2. CLIENT patches project status DRAFT -> OPEN
 # Replace {{projectId}} with the id returned from step 1
 PATCH {{baseUrl}}/projects/9/
-Authorization: {{clientAuth}}
+Authorization: Bearer {{clientToken}}
 Content-Type: application/json
 
 {
@@ -38,19 +92,19 @@ Content-Type: application/json
 
 ### 3. CLIENT views their own projects (any status)
 GET {{baseUrl}}/projects/mine/
-Authorization: {{clientAuth}}
+Authorization: Bearer {{clientToken}}
 
 ### 4. FREELANCER lists OPEN projects
 GET {{baseUrl}}/projects/
-Authorization: {{freelancerAuth}}
+Authorization: Bearer {{freelancerToken}}
 
 ### 5. FREELANCER lists OPEN projects filtered by budget range
 GET {{baseUrl}}/projects/?status=OPEN&budget_min=100&budget_max=1000
-Authorization: {{freelancerAuth}}
+Authorization: Bearer {{freelancerToken}}
 
 ### 6. FREELANCER submits a proposal on the OPEN project
 POST {{baseUrl}}/projects/9/proposals/
-Authorization: {{freelancerAuth}}
+Authorization: Bearer {{freelancerToken}}
 Content-Type: application/json
 
 {
@@ -60,11 +114,11 @@ Content-Type: application/json
 
 ### 7. CLIENT (owner) lists all proposals on their project
 GET {{baseUrl}}/projects/9/proposals/
-Authorization: {{clientAuth}}
+Authorization: Bearer {{clientToken}}
 
 ### 8. FREELANCER edits their own PENDING proposal
 PATCH {{baseUrl}}/projects/9/proposals/2/
-Authorization: {{freelancerAuth}}
+Authorization: Bearer {{freelancerToken}}
 Content-Type: application/json
 
 {
@@ -74,7 +128,7 @@ Content-Type: application/json
 
 ### 9. CLIENT accepts the proposal
 POST {{baseUrl}}/projects/9/proposals/2/accept/
-Authorization: {{clientAuth}}
+Authorization: Bearer {{clientToken}}
 
 ### =========================================
 ### FAILURE PATHS
@@ -82,7 +136,7 @@ Authorization: {{clientAuth}}
 
 ### F1. FREELANCER tries to create a project -> expect 403
 POST {{baseUrl}}/projects/
-Authorization: {{freelancerAuth}}
+Authorization: Bearer {{freelancerToken}}
 Content-Type: application/json
 
 {
@@ -94,7 +148,7 @@ Content-Type: application/json
 
 ### F2. CLIENT tries to propose on their own project -> expect 400/403
 POST {{baseUrl}}/projects/1/proposals/
-Authorization: {{clientAuth}}
+Authorization: Bearer {{clientToken}}
 Content-Type: application/json
 
 {
@@ -104,7 +158,7 @@ Content-Type: application/json
 
 ### F3. FREELANCER submits duplicate proposal on same project -> expect 400
 POST {{baseUrl}}/projects/1/proposals/
-Authorization: {{freelancerAuth}}
+Authorization: Bearer {{freelancerToken}}
 Content-Type: application/json
 
 {
@@ -114,7 +168,7 @@ Content-Type: application/json
 
 ### F4. Different CLIENT tries to update another client's project -> expect 403/404
 PATCH {{baseUrl}}/projects/1/
-Authorization: {{otherClientAuth}}
+Authorization: Bearer {{otherClientToken}}
 Content-Type: application/json
 
 {
@@ -125,7 +179,7 @@ Content-Type: application/json
 # First create a fresh DRAFT project as client, then try proposing on it as freelancer
 # @name createDraftProject
 POST {{baseUrl}}/projects/
-Authorization: {{clientAuth}}
+Authorization: Bearer {{clientToken}}
 Content-Type: application/json
 
 {
@@ -136,8 +190,8 @@ Content-Type: application/json
 }
 
 ###
-POST {{baseUrl}}/projects/2/proposals/
-Authorization: {{freelancerAuth}}
+POST {{baseUrl}}/projects/4/proposals/
+Authorization: Bearer {{freelancerToken}}
 Content-Type: application/json
 
 {
@@ -146,8 +200,8 @@ Content-Type: application/json
 }
 
 ### F6. FREELANCER tries to edit a proposal that's not PENDING anymore -> expect 403
-PATCH {{baseUrl}}/projects/1/proposals/1/
-Authorization: {{freelancerAuth}}
+PATCH {{baseUrl}}/projects/4/proposals/1/
+Authorization: Bearer {{freelancerToken}}
 Content-Type: application/json
 
 {
@@ -157,7 +211,7 @@ Content-Type: application/json
 ### F7. Non-owner freelancer tries to view another freelancer's proposal on same project
 # (requires a second freelancer user + their own proposal on project 1)
 GET {{baseUrl}}/projects/1/proposals/
-Authorization: {{otherClientAuth}}
+Authorization: Bearer {{otherClientToken}}
 
 
 
