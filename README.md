@@ -1,3 +1,4 @@
+````md
 # Nexus
 
 A modern Freelance Marketplace Backend built with Django and Django REST Framework.
@@ -10,7 +11,7 @@ Nexus is a backend project for a freelance marketplace where clients can post pr
 
 This project is being developed step by step with production-ready architecture and modern backend practices.
 
-Current status: **Phase 2 in progress (Project & Proposal API complete)**.
+Current status: **Phase 3 completed (JWT Authentication implemented).**
 
 ---
 
@@ -20,6 +21,7 @@ Current status: **Phase 2 in progress (Project & Proposal API complete)**.
 * Django
 * Django REST Framework (DRF)
 * django-filter
+* djangorestframework-simplejwt
 * SQLite (temporary, PostgreSQL will be introduced in Phase 5)
 
 ---
@@ -31,7 +33,7 @@ Current status: **Phase 2 in progress (Project & Proposal API complete)**.
 ```bash
 git clone <repository-url>
 cd Nexus
-```
+````
 
 ### 2. Create a virtual environment
 
@@ -79,17 +81,112 @@ python manage.py runserver
 
 ---
 
-## Health Check
+# API Authentication (JWT)
 
-Endpoint
+Nexus uses JWT authentication powered by `djangorestframework-simplejwt`.
+
+The API uses Access Tokens and Refresh Tokens for authentication.
+
+Authenticated requests must include:
+
+```http
+Authorization: Bearer <access_token>
+```
+
+---
+
+## Authentication Endpoints
+
+| Method | Endpoint                        | Description                        |
+| ------ | ------------------------------- | ---------------------------------- |
+| POST   | `/api/v1/auth/register/`        | Register a new user                |
+| POST   | `/api/v1/auth/login/`           | Login and receive JWT tokens       |
+| POST   | `/api/v1/auth/refresh/`         | Refresh access token               |
+| POST   | `/api/v1/auth/logout/`          | Logout and blacklist refresh token |
+| GET    | `/api/v1/auth/me/`              | Get current authenticated user     |
+| POST   | `/api/v1/auth/password-change/` | Change current user's password     |
+
+---
+
+## JWT Token Lifecycle
+
+JWT authentication uses two types of tokens:
+
+### Access Token
+
+* Used for accessing protected API endpoints.
+* Short-lived for better security.
+* Sent with every authenticated request.
+
+Example:
+
+```http
+Authorization: Bearer eyJhbGciOiJIUzI1Ni...
+```
+
+---
+
+### Refresh Token
+
+* Long-lived token used to obtain a new access token.
+* Used only with the refresh endpoint.
+
+Example login response:
+
+```json
+{
+    "access": "eyJhbGciOiJIUzI1Ni...",
+    "refresh": "eyJhbGciOiJIUzI1Ni..."
+}
+```
+
+---
+
+## Logout Strategy
+
+Logout is implemented using JWT blacklist functionality.
+
+When a user logs out:
+
+1. The refresh token is sent to the logout endpoint.
+2. The refresh token is added to the blacklist.
+3. The blacklisted refresh token cannot be used again to generate new access tokens.
+
+Access tokens remain valid until they naturally expire because JWT authentication is stateless.
+
+---
+
+## JWT Storage Recommendation
+
+JWT tokens should not be stored in browser `localStorage`.
+
+Although convenient, localStorage can expose tokens to JavaScript-based attacks such as XSS (Cross-Site Scripting).
+
+Recommended production approaches:
+
+* Store refresh tokens inside secure HttpOnly cookies.
+* Keep access tokens short-lived.
+* Use Secure and SameSite cookie settings.
+
+For this backend project, authentication logic is implemented on the API side and frontend token storage strategy will be decided depending on the client application.
+
+---
+
+# Health Check
+
+Endpoint:
 
 ```text
 GET /api/v1/health/
 ```
 
 Example:
+
+```text
 http://127.0.0.1:8000/api/v1/health/
-Expected response
+```
+
+Expected response:
 
 ```json
 {
@@ -100,14 +197,17 @@ Expected response
 
 ---
 
-## Django Admin
+# Django Admin
 
+```text
 http://127.0.0.1:8000/admin/
+```
+
 Login using your superuser credentials.
 
 ---
 
-## Current Features
+# Current Features
 
 * Custom User Model
 * Role-based users (Client / Freelancer)
@@ -117,6 +217,9 @@ Login using your superuser credentials.
 * Health Check API
 * REST API foundation
 * API Versioning (/api/v1/)
+* JWT Authentication with SimpleJWT
+* JWT logout with token blacklist
+* Login and register throttling
 * Project CRUD with role-based permissions
 * Proposal system with marketplace business rules
 * Object-level and queryset-level permission scoping
@@ -124,110 +227,118 @@ Login using your superuser credentials.
 
 ---
 
-## API Endpoints (Phase 2)
+# Projects API
 
-### Authentication
-
-Phase 2 currently uses **Session Authentication** (and Basic Authentication for local testing) since JWT authentication has not been implemented yet. This is temporary — JWT will replace this in a later phase, and no other application logic (views, permissions, serializers) will need to change when that happens.
-
-To authenticate manually while testing:
-* Log in via `/admin/` or `/api-auth/login/` to get a session cookie, **or**
-* Use HTTP Basic Auth (`Authorization: Basic <email> <password>`) for quick testing with tools like VS Code REST Client.
-
-### Projects
-
-| Method | Endpoint | Who | Description |
-|---|---|---|---|
-| GET | `/api/v1/projects/` | Authenticated | List OPEN projects (paginated, filterable) |
-| GET | `/api/v1/projects/mine/` | Authenticated (owner) | List all of the caller's own projects, any status |
-| POST | `/api/v1/projects/` | CLIENT only | Create a new project (forced to DRAFT status) |
-| GET | `/api/v1/projects/{id}/` | Owner, or anyone if OPEN | Retrieve project detail |
-| PATCH | `/api/v1/projects/{id}/` | Owner only | Update project fields or status |
-| DELETE | `/api/v1/projects/{id}/` | Owner only | Delete project (DRAFT only) |
-
-### Proposals (nested under project)
-
-| Method | Endpoint | Who | Description |
-|---|---|---|---|
-| GET | `/api/v1/projects/{project_id}/proposals/` | Owner sees all, freelancer sees own | List proposals on a project (paginated) |
-| POST | `/api/v1/projects/{project_id}/proposals/` | FREELANCER only | Submit a proposal on an OPEN project |
-| GET | `/api/v1/projects/{project_id}/proposals/{id}/` | Owner or proposal's freelancer | Retrieve proposal detail |
-| PATCH | `/api/v1/projects/{project_id}/proposals/{id}/` | Freelancer, own PENDING proposal only | Edit cover letter / bid amount |
-| DELETE | `/api/v1/projects/{project_id}/proposals/{id}/` | Freelancer, own PENDING proposal only | Delete a proposal |
-| POST | `/api/v1/projects/{project_id}/proposals/{id}/accept/` | Project owner (client) only | Accept a pending proposal |
-| POST | `/api/v1/projects/{project_id}/proposals/{id}/reject/` | Project owner (client) only | Reject a pending proposal |
+| Method | Endpoint                 | Who                          | Description                 |
+| ------ | ------------------------ | ---------------------------- | --------------------------- |
+| GET    | `/api/v1/projects/`      | Authenticated                | List OPEN projects          |
+| GET    | `/api/v1/projects/mine/` | Authenticated owner          | List user's projects        |
+| POST   | `/api/v1/projects/`      | CLIENT only                  | Create project              |
+| GET    | `/api/v1/projects/{id}/` | Owner or public OPEN project | Retrieve project            |
+| PATCH  | `/api/v1/projects/{id}/` | Owner only                   | Update project              |
+| DELETE | `/api/v1/projects/{id}/` | Owner only                   | Delete project (DRAFT only) |
 
 ---
 
-## Filtering
+# Proposals API
 
-The project list endpoint supports the following query parameters:
+Nested under projects:
 
-| Param | Type | Example | Description |
-|---|---|---|---|
-| `status` | string | `?status=OPEN` | Exact match on project status |
-| `budget_min` | number | `?budget_min=100` | Minimum budget (inclusive) |
-| `budget_max` | number | `?budget_max=5000` | Maximum budget (inclusive) |
+| Method | Endpoint                                               | Who                 | Description           |
+| ------ | ------------------------------------------------------ | ------------------- | --------------------- |
+| GET    | `/api/v1/projects/{project_id}/proposals/`             | Owner/Freelancer    | List proposals        |
+| POST   | `/api/v1/projects/{project_id}/proposals/`             | FREELANCER only     | Submit proposal       |
+| GET    | `/api/v1/projects/{project_id}/proposals/{id}/`        | Owner or freelancer | Retrieve proposal     |
+| PATCH  | `/api/v1/projects/{project_id}/proposals/{id}/`        | Freelancer owner    | Edit pending proposal |
+| DELETE | `/api/v1/projects/{project_id}/proposals/{id}/`        | Freelancer owner    | Delete proposal       |
+| POST   | `/api/v1/projects/{project_id}/proposals/{id}/accept/` | Project owner       | Accept proposal       |
+| POST   | `/api/v1/projects/{project_id}/proposals/{id}/reject/` | Project owner       | Reject proposal       |
 
-Example combined query:
+---
 
+# Filtering
+
+Project list supports:
+
+| Parameter  | Example            | Description              |
+| ---------- | ------------------ | ------------------------ |
+| status     | `?status=OPEN`     | Filter by project status |
+| budget_min | `?budget_min=100`  | Minimum budget           |
+| budget_max | `?budget_max=5000` | Maximum budget           |
+
+Example:
+
+```text
 GET /api/v1/projects/?status=OPEN&budget_min=100&budget_max=5000
+```
 
 ---
 
-## Pagination
+# Pagination
 
-All list endpoints use DRF's `PageNumberPagination` with a page size of **10**.
+All list endpoints use DRF `PageNumberPagination`.
 
-Example response shape:
+Default page size:
+
+```text
+10 items per page
+```
+
+Example response:
 
 ```json
 {
-  "count": 45,
-  "next": "http://127.0.0.1:8000/api/v1/projects/?page=2",
-  "previous": null,
-  "results": [
-    {
-      "id": 7,
-      "title": "Build a landing page",
-      "status": "OPEN",
-      "owner": 3,
-      "owner_email": "client1@example.com",
-      "budget": "500.00",
-      "deadline": "2026-09-01",
-      "created_at": "2026-07-05T14:39:59Z",
-      "updated_at": "2026-07-05T14:39:59Z"
-    }
-  ]
+    "count": 45,
+    "next": "http://127.0.0.1:8000/api/v1/projects/?page=2",
+    "previous": null,
+    "results": []
 }
 ```
 
 ---
 
-## API Demo / Manual Testing
+# API Demo / Manual Testing
 
-A full end-to-end HTTP demo (happy path + failure path) is available at:
+A complete API testing workflow is available at:
 
-http/.http
-Open it in VS Code with the **REST Client** extension to run each request in sequence — including project creation, status transitions, proposal submission, accept/reject, and permission/validation failure cases (403, 404, duplicate proposal handling, etc.).
+```text
+http/nexus.http
+```
+
+Open it using VS Code REST Client extension.
+
+The file includes:
+
+* JWT login flow
+* Project creation
+* Project updates
+* Proposal submission
+* Accept/reject actions
+* Permission failure scenarios
+* Validation error scenarios
 
 ---
 
-## Project Structure
+# Project Structure
 
+```
 apps/
-accounts/
-projects/
-core/
+ ├── accounts/
+ ├── projects/
+ ├── core/
+
 config/
+
 requirements/
+
 http/
+```
 
 ---
 
-## Development Roadmap
+# Development Roadmap
 
-### ✅ Phase 1
+## ✅ Phase 1
 
 * Project foundation
 * Custom User
@@ -235,32 +346,60 @@ http/
 * Admin configuration
 * Health Check API
 
-### 🚧 Phase 2
+---
 
-* [x] Project model + admin
-* [x] Proposal model + admin + DB uniqueness constraint
-* [x] Project serializers + validation
-* [x] Project CRUD API with object permissions
-* [x] Filtering and pagination on project list
-* [x] Proposal serializers + marketplace validation
-* [x] Nested proposal endpoints with role permissions
-* [x] End-to-end API demo (`.http` file)
-* [ ] Automated tests (Phase 7)
-* [ ] JWT Authentication (later phase — Session/Basic Auth used temporarily)
+## ✅ Phase 2
+
+* Project model + admin
+* Proposal model + admin
+* Project CRUD API
+* Object permissions
+* Proposal system
+* Filtering
+* Pagination
+* Nested proposal endpoints
+* API demo testing
 
 ---
 
-## Known Technical Debt
+## ✅ Phase 3
 
-See [`TECH_DEBT.md`](./TECH_DEBT.md) for tracked items, including:
-* N+1 queries on project/proposal owner and freelancer fields (not yet optimized)
-* ACCEPTED proposal status is currently cosmetic — no contract/payment logic behind it yet
-* Authentication is temporary (Session/Basic) pending JWT implementation
-* No automated test suite yet
+* JWT Authentication with SimpleJWT
+* Login/Register endpoints
+* Refresh token support
+* Logout with blacklist
+* Password change endpoint
+* Authentication throttling
 
 ---
 
-## License
+## 🚧 Future Phases
+
+* Automated tests
+* PostgreSQL migration
+* Query optimization
+* Docker setup
+* CI/CD pipeline
+* Production deployment
+
+---
+
+# Known Technical Debt
+
+See `TECH_DEBT.md` for tracked items.
+
+Current items:
+
+* N+1 queries on related user/project fields (optimization planned)
+* ACCEPTED proposal status has no payment/contract workflow yet
+* Frontend JWT storage strategy needs production decision
+* Automated test suite is not implemented yet
+
+---
+
+# License
 
 This project is being developed for educational and portfolio purposes.
 
+```
+```

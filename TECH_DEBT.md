@@ -68,30 +68,48 @@ other proposals, payment integration) is planned for a later phase.
 
 ---
 
-## 4. Authentication is temporary (Session/Basic, not JWT)
+## 4. JWT Authentication token storage strategy
 
-**Where:** `REST_FRAMEWORK["DEFAULT_AUTHENTICATION_CLASSES"]` in `config/settings`
+**Where:** Authentication layer (`apps/accounts/`)
 
-**Issue:** Phase 2 API testing and demo currently rely on
-`SessionAuthentication` and `BasicAuthentication`. JWT authentication has
-not been implemented yet, so `BasicAuthentication` is enabled purely for
-local manual testing convenience (e.g. via `.http` files), which is not
-suitable for production.
+**Issue:** JWT authentication is implemented using `djangorestframework-simplejwt`,
+but the final frontend token storage strategy has not been decided yet.
 
-**Impact:** Low for now (local dev only), but `BasicAuthentication` must be
-removed before any public/production deployment, since it sends
-base64-encoded credentials on every request.
+Storing JWT tokens in browser localStorage can expose tokens to XSS attacks.
 
-**Fix:** Replace with JWT authentication (e.g. `djangorestframework-simplejwt`)
-in the authentication phase. No changes to views, permissions, or serializers
-are expected — they operate on `request.user` regardless of how it was
-authenticated.
+**Impact:** Medium for production applications where a frontend client is connected.
 
-**Status:** Deferred intentionally. Remove `BasicAuthentication` once JWT lands.
+**Fix:** Use a production-safe strategy such as storing refresh tokens in
+HttpOnly Secure cookies and keeping access tokens short-lived.
+
+**Status:** Backend JWT implementation is complete. Frontend storage decision
+is deferred until frontend integration.
 
 ---
 
-## 5. No automated test suite
+## 5. Throttling uses in-memory storage
+
+**Where:** Authentication throttling (`LoginRateThrottle`, `RegisterRateThrottle`)
+
+**Issue:** API rate limiting currently relies on Django's default cache
+backend, which is suitable for local development and single-instance
+deployments.
+
+In a distributed environment with multiple application servers, each server
+would maintain its own throttle state, meaning rate limits would not be
+shared globally.
+
+**Impact:** Low for current development stage, but can become a security
+concern when scaling horizontally.
+
+**Fix:** Replace the default cache backend with a distributed cache such as
+Redis so all application instances share the same throttle state.
+
+**Status:** Intentionally deferred. Redis-based throttling will be considered
+during production deployment.
+
+
+## 6. No automated test suite
 
 **Where:** Entire `apps/projects/` app (and `apps/accounts/`)
 
