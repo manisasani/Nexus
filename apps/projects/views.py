@@ -1,12 +1,8 @@
-from django.db import IntegrityError
-from xml.dom import ValidationErr
-
 from rest_framework import viewsets, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
-from rest_framework.exceptions import ValidationError
 
 from .models import Project, Proposal
 from .permissions import IsClient, IsFreelancer, IsOwner, IsProposalOwnerPending

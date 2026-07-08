@@ -3,8 +3,9 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.exceptions import TokenError
 
-from .serializers import PasswordChangeSerializer, RegisterSerializer
+from .serializers import MeSerializer, PasswordChangeSerializer, RegisterSerializer
 from .throttles import LoginThrottle, RegisterThrottle
 
 class RegisterView(generics.CreateAPIView):
@@ -24,11 +25,11 @@ class LogoutView(APIView):
             token = RefreshToken(refresh_token)
             token.blacklist()
             return Response(status=status.HTTP_205_RESET_CONTENT)
-        except Exception:
+        except TokenError:
             return Response(status=status.HTTP_400_BAD_REQUEST)
         
-class MeView(generics.RetrieveAPIView):
-    serializer_class = RegisterSerializer
+class MeView(generics.RetrieveUpdateAPIView):
+    serializer_class = MeSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_object(self):

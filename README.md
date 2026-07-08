@@ -403,3 +403,10 @@ This project is being developed for educational and portfolio purposes.
 
 ```
 ```
+## API Versioning
+
+All endpoints are served under `/api/v1/`. Breaking changes (removed/renamed
+fields, changed data types, altered status code meaning) will be introduced
+under a new prefix (`/api/v2/`) rather than modifying `v1` in place.
+Non-breaking changes (new optional fields, new endpoints) may be added to
+`v1` directly.
