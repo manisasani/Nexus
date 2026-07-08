@@ -27,6 +27,7 @@ INSTALLED_APPS = [
 
     'rest_framework',
     "rest_framework_simplejwt.token_blacklist",
+    "drf_spectacular",
 
     'apps.accounts.apps.AccountsConfig',
     'apps.core.apps.CoreConfig',
@@ -147,6 +148,8 @@ REST_FRAMEWORK = {
         "register": "3/min",
     },
 
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+
 }
 
 SIMPLE_JWT = {
@@ -155,4 +158,11 @@ SIMPLE_JWT = {
     "ROTATE_REFRESH_TOKENS": True,
     "BLACKLIST_AFTER_ROTATION": True,
     "AUTH_HEADER_TYPES": ("Bearer",),
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Nexus API",
+    "DESCRIPTION": "Freelance marketplace backend — projects and proposals API.",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
 }

@@ -17,6 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from drf_spectacular.views import SpectacularAPIView
 
 import apps
 
@@ -26,4 +27,5 @@ urlpatterns = [
     path('api/v1/', include('apps.core.urls')),
     path('api/v1/', include('apps.projects.urls')),
     path("api/v1/", include("apps.accounts.urls")),
+    path("api/v1/schema/", SpectacularAPIView.as_view(), name="schema"),
 ]
