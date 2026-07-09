@@ -16,7 +16,35 @@ from .serializers import (
     ProposalStatusUpdateSerializer,
     ProposalUpdateSerializer,
 )
+from drf_spectacular.utils import (
+    extend_schema,
+    OpenApiExample,
+    OpenApiParameter,
+)
 
+@extend_schema(
+    tags=["Projects"],
+    parameters=[
+        OpenApiParameter(
+            name="status",
+            description="Filter projects by status (exact match).",
+            required=False,
+            type=str,
+        ),
+        OpenApiParameter(
+            name="budget_min",
+            description="Minimum budget (inclusive).",
+            required=False,
+            type=float,
+        ),
+        OpenApiParameter(
+            name="budget_max",
+            description="Maximum budget (inclusive).",
+            required=False,
+            type=float,
+        ),
+    ],
+)
 class ProjectViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
     filter_backends = [DjangoFilterBackend]
@@ -45,6 +73,10 @@ class ProjectViewSet(viewsets.ModelViewSet):
         
         return qs
 
+    @extend_schema(
+        summary="List my projects",
+        description="Returns all projects owned by the authenticated client.",
+    )
     @action(detail=False, methods=["get"], url_path="mine") 
     def mine(self, request):
         qs = Project.objects.filter(owner=request.user)
@@ -63,9 +95,8 @@ class ProjectViewSet(viewsets.ModelViewSet):
             raise ValidationError('Only projects in DRAFT status can be deleted.')
         instance.delete()
 
-
+@extend_schema(tags=["Proposals"])
 class ProposalViewSet(viewsets.ModelViewSet):
-
     def get_permissions(self):
         if self.action == 'create':
             return [permissions.IsAuthenticated(), IsFreelancer()]
@@ -97,7 +128,25 @@ class ProposalViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save()
 
-
+    @extend_schema(
+        summary="Accept a proposal",
+        description=(
+            "Only the project owner can accept a proposal. "
+            "The proposal must currently be in PENDING status."
+        ),
+        responses={200: ProposalReadSerializer},
+        examples=[
+            OpenApiExample(
+                "Accepted proposal",
+                response_only=True,
+                value={
+                    "id": 1,
+                    "status": "ACCEPTED",
+                    "bid_amount": "450.00",
+                },
+            )
+        ],
+    )
     @action(detail=True, methods=["post"], url_path="accept")
     def accept(self, request, project_id=None, pk=None):
         proposal = self.get_object_for_status_change(request, pk)
@@ -110,7 +159,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
         proposal.save(update_fields=["status"])
         return Response(ProposalReadSerializer(proposal).data)
 
-
+    
     @action(detail=True, methods=["post"], url_path="reject")
     def reject(self, request, project_id=None, pk=None):
         proposal = self.get_object_for_status_change(request, pk)
