@@ -410,3 +410,32 @@ fields, changed data types, altered status code meaning) will be introduced
 under a new prefix (`/api/v2/`) rather than modifying `v1` in place.
 Non-breaking changes (new optional fields, new endpoints) may be added to
 `v1` directly.
+
+## API Documentation
+
+Interactive API documentation is available at:
+
+- Swagger UI: `http://127.0.0.1:8000/api/docs/`
+- ReDoc: `http://127.0.0.1:8000/api/redoc/`
+- Raw OpenAPI schema: `http://127.0.0.1:8000/api/v1/schema/`
+
+## Error Response Format
+
+All API errors follow a consistent shape:
+
+```json
+{
+  "detail": "Human-readable summary of what went wrong",
+  "code": "machine_readable_error_code",
+  "errors": { "field_name": ["Specific validation message"] }
+}
+```
+
+| HTTP Status | code | Meaning |
+|---|---|---|
+| 400 | `validation_error` | Request failed validation or business rules |
+| 401 | `authentication_failed` | Missing or invalid credentials |
+| 403 | `permission_denied` | Authenticated but not allowed |
+| 404 | `not_found` | Resource does not exist |
+| 429 | `throttled` | Rate limit exceeded |
+| 500 | `server_error` | Unexpected server error |

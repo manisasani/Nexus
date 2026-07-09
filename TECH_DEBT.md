@@ -128,3 +128,19 @@ permission classes) and integration tests (full API flows, including
 failure paths already covered manually in `http/.http`).
 
 **Status:** Deferred. Planned for Phase 7.
+
+## 6. No auto-generated client SDKs
+
+**Issue:** Frontend/mobile clients must hand-write API calls based on the
+OpenAPI schema. No SDK generation pipeline exists yet.
+
+**Status:** Intentionally postponed — not required for Phase 4 milestone.
+
+## 7. 422 vs 400 not distinguished
+
+**Issue:** All validation and business-rule errors return 400, following
+DRF's default convention, rather than distinguishing syntactically invalid
+requests (400) from semantically invalid ones (422).
+
+**Status:** Intentional simplification for Phase 4. Revisit if API consumers
+need finer-grained error handling.

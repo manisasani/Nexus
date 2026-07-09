@@ -213,5 +213,21 @@ Content-Type: application/json
 GET {{baseUrl}}/projects/1/proposals/
 Authorization: Bearer {{otherClientToken}}
 
+### Check consistent error shape: validation error
+POST {{baseUrl}}/projects/
+Authorization: Bearer {{clientToken}}
+Content-Type: application/json
 
+{
+  "title": "",
+  "description": "test",
+  "budget": "-10.00",
+  "deadline": "2020-01-01"
+}
 
+### Check consistent error shape: not found
+GET {{baseUrl}}/projects/99999/
+Authorization: Bearer {{clientToken}}
+
+### Check consistent error shape: no auth
+GET {{baseUrl}}/projects/mine/
