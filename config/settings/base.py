@@ -8,18 +8,12 @@ https://docs.djangoproject.com/en/6.0/topics/settings/
 
 from datetime import timedelta
 from pathlib import Path
-import environ
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 # Note: one extra .parent because this file now lives one level deeper
 # (config/settings/base.py instead of config/settings.py)
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
-env = environ.Env(
-    DEBUG=(bool, False),
-)
-
-environ.Env.read_env(BASE_DIR / ".env")
 
 # Application definition
 
