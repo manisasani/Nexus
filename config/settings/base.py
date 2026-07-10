@@ -1,21 +1,18 @@
 """
 Base settings for config project.
 Shared across all environments (development, production, etc.)
-
-For more information on this file, see
-https://docs.djangoproject.com/en/6.0/topics/settings/
 """
 
 from datetime import timedelta
 from pathlib import Path
+import environ
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
-# Note: one extra .parent because this file now lives one level deeper
-# (config/settings/base.py instead of config/settings.py)
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
-
-# Application definition
+env = environ.Env(
+    DEBUG=(bool, False),
+)
+environ.Env.read_env(BASE_DIR / ".env")
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -32,7 +29,6 @@ INSTALLED_APPS = [
     'apps.accounts.apps.AccountsConfig',
     'apps.core.apps.CoreConfig',
     'apps.projects.apps.ProjectsConfig',
-    
 ]
 
 MIDDLEWARE = [
@@ -66,21 +62,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-
-# Database
-# https://docs.djangoproject.com/en/6.0/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
-
-
-# Password validation
-# https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -96,27 +77,12 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
-# Internationalization
-# https://docs.djangoproject.com/en/6.0/topics/i18n/
-
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
 USE_TZ = True
 
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/6.0/howto/static-files/
-
 STATIC_URL = 'static/'
-
-
-# Default primary key field type
-# https://docs.djangoproject.com/en/6.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -144,7 +110,7 @@ REST_FRAMEWORK = {
     ],
 
     "DEFAULT_THROTTLE_CLASSES": [],
-    
+
     "DEFAULT_THROTTLE_RATES": {
         "login": "5/min",
         "register": "3/min",
@@ -153,7 +119,6 @@ REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 
     "EXCEPTION_HANDLER": "apps.core.exceptions.custom_exception_handler"
-
 }
 
 SIMPLE_JWT = {
