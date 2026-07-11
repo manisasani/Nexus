@@ -1,0 +1,15 @@
+# .dockerignore
+.git
+.gitignore
+.env
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+*.sqlite3
+.vscode/
+.idea/
+README.md
+TECH_DEBT.md
+http/
