@@ -29,57 +29,59 @@ Current status: **Phase 3 completed (JWT Authentication implemented).**
 ## Project Setup
 
 ### 1. Clone the repository
-
-```bash
+\`\`\`bash
 git clone <repository-url>
 cd Nexus
-````
+\`\`\`
 
-### 2. Create a virtual environment
-
-```bash
+### 2. Create and activate a virtual environment
+\`\`\`bash
 python -m venv venv
-```
+venv\Scripts\activate   # Windows
+source venv/bin/activate  # Linux/macOS
+\`\`\`
 
-### 3. Activate the virtual environment
-
-Windows
-
-```bash
-venv\Scripts\activate
-```
-
-Linux / macOS
-
-```bash
-source venv/bin/activate
-```
-
-### 4. Install dependencies
-
-```bash
+### 3. Install dependencies
+\`\`\`bash
 pip install -r requirements/base.txt
-```
+\`\`\`
 
-### 5. Apply migrations
+### 4. Set up PostgreSQL
+Make sure PostgreSQL is running locally (or via Docker — see below), and
+create a database:
+\`\`\`sql
+CREATE DATABASE nexus_db;
+\`\`\`
 
-```bash
+Or with Docker:
+\`\`\`bash
+docker run --name nexus-postgres -e POSTGRES_PASSWORD=yourpassword -e POSTGRES_DB=nexus_db -p 5432:5432 -d postgres:16
+\`\`\`
+
+### 5. Configure environment variables
+\`\`\`bash
+cp .env.example .env
+\`\`\`
+Then edit \`.env\` and fill in real values (SECRET_KEY, DATABASE_URL, etc).
+Generate a secret key with:
+\`\`\`bash
+python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
+\`\`\`
+
+### 6. Apply migrations
+\`\`\`bash
 python manage.py migrate
-```
+\`\`\`
 
-### 6. Create a superuser
-
-```bash
+### 7. Create a superuser
+\`\`\`bash
 python manage.py createsuperuser
-```
+\`\`\`
 
-### 7. Run the development server
-
-```bash
+### 8. Run the development server
+\`\`\`bash
 python manage.py runserver
-```
-
----
+\`\`\`
 
 # API Authentication (JWT)
 
@@ -439,3 +441,11 @@ All API errors follow a consistent shape:
 | 404 | `not_found` | Resource does not exist |
 | 429 | `throttled` | Rate limit exceeded |
 | 500 | `server_error` | Unexpected server error |
+
+## Settings
+
+This project uses split settings under \`config/settings/\`:
+- \`base.py\` — shared settings across all environments
+- \`local.py\` — local development (used by default)
+- \`test.py\` — used when running the test suite
+- \`production.py\` — production deployment (DEBUG is hardcoded to False)
