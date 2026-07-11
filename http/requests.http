@@ -80,9 +80,12 @@ Content-Type: application/json
   "deadline": "2026-09-01"
 }
 
+###
+
+@projectId = {{createProject.response.body.id}}
+
 ### 2. CLIENT patches project status DRAFT -> OPEN
-# Replace {{projectId}} with the id returned from step 1
-PATCH {{baseUrl}}/projects/9/
+PATCH {{baseUrl}}/projects/{{projectId}}/
 Authorization: Bearer {{clientToken}}
 Content-Type: application/json
 
@@ -103,7 +106,8 @@ GET {{baseUrl}}/projects/?status=OPEN&budget_min=100&budget_max=1000
 Authorization: Bearer {{freelancerToken}}
 
 ### 6. FREELANCER submits a proposal on the OPEN project
-POST {{baseUrl}}/projects/9/proposals/
+# @name createProposal
+POST {{baseUrl}}/projects/{{projectId}}/proposals/
 Authorization: Bearer {{freelancerToken}}
 Content-Type: application/json
 
@@ -112,12 +116,16 @@ Content-Type: application/json
   "bid_amount": "450.00"
 }
 
+###
+
+@proposalId = {{createProposal.response.body.id}}
+
 ### 7. CLIENT (owner) lists all proposals on their project
-GET {{baseUrl}}/projects/9/proposals/
+GET {{baseUrl}}/projects/{{projectId}}/proposals/
 Authorization: Bearer {{clientToken}}
 
 ### 8. FREELANCER edits their own PENDING proposal
-PATCH {{baseUrl}}/projects/9/proposals/2/
+PATCH {{baseUrl}}/projects/{{projectId}}/proposals/{{proposalId}}/
 Authorization: Bearer {{freelancerToken}}
 Content-Type: application/json
 
@@ -127,7 +135,7 @@ Content-Type: application/json
 }
 
 ### 9. CLIENT accepts the proposal
-POST {{baseUrl}}/projects/9/proposals/2/accept/
+POST {{baseUrl}}/projects/{{projectId}}/proposals/{{proposalId}}/accept/
 Authorization: Bearer {{clientToken}}
 
 ### =========================================
@@ -146,8 +154,8 @@ Content-Type: application/json
   "deadline": "2026-09-01"
 }
 
-### F2. CLIENT tries to propose on their own project -> expect 400/403
-POST {{baseUrl}}/projects/1/proposals/
+### F2. CLIENT tries to propose on their own OPEN project -> expect 403
+POST {{baseUrl}}/projects/{{projectId}}/proposals/
 Authorization: Bearer {{clientToken}}
 Content-Type: application/json
 
@@ -157,7 +165,7 @@ Content-Type: application/json
 }
 
 ### F3. FREELANCER submits duplicate proposal on same project -> expect 400
-POST {{baseUrl}}/projects/1/proposals/
+POST {{baseUrl}}/projects/{{projectId}}/proposals/
 Authorization: Bearer {{freelancerToken}}
 Content-Type: application/json
 
@@ -167,7 +175,7 @@ Content-Type: application/json
 }
 
 ### F4. Different CLIENT tries to update another client's project -> expect 403/404
-PATCH {{baseUrl}}/projects/1/
+PATCH {{baseUrl}}/projects/{{projectId}}/
 Authorization: Bearer {{otherClientToken}}
 Content-Type: application/json
 
@@ -176,21 +184,24 @@ Content-Type: application/json
 }
 
 ### F5. FREELANCER tries to create a proposal on a DRAFT project -> expect 400
-# First create a fresh DRAFT project as client, then try proposing on it as freelancer
 # @name createDraftProject
 POST {{baseUrl}}/projects/
 Authorization: Bearer {{clientToken}}
 Content-Type: application/json
 
 {
-  "title": "Build a landing page",
-  "description": "Simple one-page site with a contact form",
-  "budget": "500.00",
-  "deadline": "2026-09-01"
+  "title": "Still in draft",
+  "description": "Not published yet",
+  "budget": "200.00",
+  "deadline": "2026-09-15"
 }
 
 ###
-POST {{baseUrl}}/projects/4/proposals/
+
+@draftProjectId = {{createDraftProject.response.body.id}}
+
+###
+POST {{baseUrl}}/projects/{{draftProjectId}}/proposals/
 Authorization: Bearer {{freelancerToken}}
 Content-Type: application/json
 
@@ -200,7 +211,7 @@ Content-Type: application/json
 }
 
 ### F6. FREELANCER tries to edit a proposal that's not PENDING anymore -> expect 403
-PATCH {{baseUrl}}/projects/4/proposals/1/
+PATCH {{baseUrl}}/projects/{{projectId}}/proposals/{{proposalId}}/
 Authorization: Bearer {{freelancerToken}}
 Content-Type: application/json
 
@@ -208,12 +219,15 @@ Content-Type: application/json
   "bid_amount": "999.00"
 }
 
-### F7. Non-owner freelancer tries to view another freelancer's proposal on same project
-# (requires a second freelancer user + their own proposal on project 1)
-GET {{baseUrl}}/projects/1/proposals/
+### F7. Non-owner (other client) tries to list proposals on someone else's project -> expect 403/404
+GET {{baseUrl}}/projects/{{projectId}}/proposals/
 Authorization: Bearer {{otherClientToken}}
 
-### Check consistent error shape: validation error
+### =========================================
+### ERROR SHAPE CONSISTENCY CHECKS
+### =========================================
+
+### Check consistent error shape: validation error6. FREELANCER submits a proposal on the OPEN project
 POST {{baseUrl}}/projects/
 Authorization: Bearer {{clientToken}}
 Content-Type: application/json
