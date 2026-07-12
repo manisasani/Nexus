@@ -449,3 +449,51 @@ This project uses split settings under \`config/settings/\`:
 - \`local.py\` — local development (used by default)
 - \`test.py\` — used when running the test suite
 - \`production.py\` — production deployment (DEBUG is hardcoded to False)
+
+## Running with Docker
+
+### Prerequisites
+- Docker and Docker Compose installed
+
+### First-time setup
+\`\`\`bash
+cp .env.example .env
+# Edit .env and fill in real values
+docker compose up --build
+\`\`\`
+
+The API will be available at \`http://127.0.0.1:8000/api/v1/\`.
+
+### Common commands
+
+| Command | Purpose |
+|---|---|
+| \`.\scripts\dev.ps1 up\` | Start all services |
+| \`.\scripts\dev.ps1 down\` | Stop all services |
+| \`.\scripts\dev.ps1 build\` | Rebuild and start |
+| \`.\scripts\dev.ps1 migrate\` | Run migrations manually (rarely needed — entrypoint does this automatically) |
+| \`.\scripts\dev.ps1 superuser\` | Create a Django superuser |
+| \`.\scripts\dev.ps1 logs\` | Tail web service logs |
+| \`.\scripts\dev.ps1 shell\` | Open Django shell inside the container |
+
+### Services
+
+- **web**: Django app, served via Gunicorn (production) or \`runserver\` (dev override)
+- **db**: PostgreSQL 16, with data persisted in a named volume (\`postgres_data\`)
+
+### Data persistence
+
+Database data is stored in a Docker named volume and survives container
+restarts (\`docker compose down\` + \`docker compose up\`). To fully wipe
+the database, use \`docker compose down -v\`.
+
+### Dev vs Production
+
+\`docker-compose.override.yml\` is automatically applied in local
+development and enables:
+- Live code reload via bind mount (no rebuild needed for code changes)
+- Django's \`runserver\` instead of Gunicorn
+- \`DEBUG=True\`
+
+In production, only \`docker-compose.yml\` is used (no override), running
+Gunicorn against an immutable image build.

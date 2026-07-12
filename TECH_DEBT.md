@@ -144,3 +144,20 @@ requests (400) from semantically invalid ones (422).
 
 **Status:** Intentional simplification for Phase 4. Revisit if API consumers
 need finer-grained error handling.
+
+## 10. No Redis or Celery containers yet
+
+**Issue:** Docker Compose currently only orchestrates `web` and `db`.
+Redis (caching, Celery broker) and Celery workers are not yet
+containerized.
+
+**Status:** Intentionally postponed. Redis in Phase 9, Celery in Phase 10.
+
+## 11. No production-grade static file serving
+
+**Issue:** `collectstatic` runs in entrypoint, but there's no reverse
+proxy (nginx) or CDN serving static files — Gunicorn serves them directly
+for now, which is not ideal for production traffic.
+
+**Status:** Acceptable for current phase. Revisit when deploying to a
+real production environment.
