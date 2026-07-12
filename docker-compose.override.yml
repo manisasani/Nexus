@@ -1,7 +1,5 @@
- services:
+services:
   web:
-    build:
-      target: builder
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
       - .:/app

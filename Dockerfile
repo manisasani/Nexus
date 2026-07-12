@@ -19,8 +19,8 @@ WORKDIR /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq5 \
+    netcat-openbsd \
     && rm -rf /var/lib/apt/lists/*
-
 
 RUN adduser --disabled-password --no-create-home appuser
 
@@ -38,5 +38,3 @@ USER appuser
 
 COPY entrypoint.sh /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
-
-RUN apt-get update && apt-get install -y --no-install-recommends netcat-openbsd && rm -rf /var/lib/apt/lists/*
