@@ -8,8 +8,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
-COPY requirements/base.txt requirements/base.txt
-RUN pip install --user --no-cache-dir -r requirements/base.txt
+COPY requirements.txt /app/requirements.txt
+RUN pip install --user --no-cache-dir -r /app/requirements.txt
 
 
 # ---------- Stage 2: Runtime ----------
