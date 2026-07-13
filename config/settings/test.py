@@ -1,7 +1,3 @@
-"""
-Test settings for config project.
-"""
-
 from .base import *
 
 SECRET_KEY = env("SECRET_KEY", default="test-secret-key-not-for-production")
@@ -14,3 +10,7 @@ DATABASES = {
         "NAME": ":memory:",
     }
 }
+
+PASSWORD_HASHERS = [
+    "django.contrib.auth.hashers.MD5PasswordHasher",
+]
