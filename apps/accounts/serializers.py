@@ -9,23 +9,23 @@ class RegisterSerializer(serializers.ModelSerializer):
         model = CustomUser
         fields = ('email', 'password', 'role')
 
-        def validate_role(self, value):
-            allowed_roles = [CustomUser.Role.CLIENT, CustomUser.Role.FREELANCER]
-            if value not in allowed_roles:
-                raise serializers.ValidationError(f"Invalid role for self-registration: {value}")
-            return value
+    def validate_role(self, value):
+        allowed_roles = [CustomUser.Role.CLIENT, CustomUser.Role.FREELANCER]
+        if value not in allowed_roles:
+            raise serializers.ValidationError(f"Invalid role for self-registration: {value}")
+        return value
         
-        def validate_email(self, value):
-            return value.strip().lower()
-        
-        def create(self, validated_data):
-            return CustomUser.objects.create_user(**validated_data)
+    def validate_email(self, value):
+        return value.strip().lower()
+    
+    def create(self, validated_data):
+        return CustomUser.objects.create_user(**validated_data)
         
 class MeSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ('id', 'email', 'role', 'phone', 'created_at')
-        read_only_fields = ('id', 'email', 'role', 'phone', 'created_at')
+        fields = ('id', 'email', 'role', 'phone')
+        read_only_fields = ('id', 'email', 'role', 'phone')
 
 
 class PasswordChangeSerializer(serializers.Serializer):
