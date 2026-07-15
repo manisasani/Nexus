@@ -161,3 +161,13 @@ for now, which is not ideal for production traffic.
 
 **Status:** Acceptable for current phase. Revisit when deploying to a
 real production environment.
+
+## 12. Race condition tests may behave differently on SQLite vs PostgreSQL
+
+**Issue:** `test_accept_race_condition.py` tests concurrent access using
+threads. SQLite's locking model (whole-database lock) differs from
+PostgreSQL's row-level locking, which `select_for_update()` relies on.
+
+**Status:** Test suite currently runs on SQLite for speed (Phase 7 decision).
+This specific test should be verified against real PostgreSQL periodically,
+or moved to a dedicated integration test suite that runs against Postgres.
