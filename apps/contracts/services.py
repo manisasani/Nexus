@@ -67,3 +67,76 @@ class ProposalService:
         project.save(update_fields=["status"])
 
         return contract
+    
+# apps/contracts/services.py (ادامه)
+
+class ContractService:
+
+    VALID_TRANSITIONS = {
+        Contract.Status.ACTIVE: [Contract.Status.DELIVERED, Contract.Status.CANCELLED],
+        Contract.Status.DELIVERED: [Contract.Status.COMPLETED, Contract.Status.DISPUTED],
+        Contract.Status.COMPLETED: [],
+        Contract.Status.DISPUTED: [],
+        Contract.Status.CANCELLED: [],
+    }
+
+    @staticmethod
+    @transaction.atomic
+    def _transition(contract_id, actor, new_status, allowed_roles, note=""):
+        contract = Contract.objects.select_for_update().get(id=contract_id)
+
+        
+        if actor.id not in (
+            contract.client_id if "client" in allowed_roles else None,
+            contract.freelancer_id if "freelancer" in allowed_roles else None,
+        ):
+            raise PermissionError("You are not allowed to perform this action.")
+
+        
+        if contract.status == new_status:
+            return contract
+
+        
+        allowed_next = ContractService.VALID_TRANSITIONS.get(contract.status, [])
+        if new_status not in allowed_next:
+            raise ValidationError(
+                f"Cannot transition from {contract.status} to {new_status}."
+            )
+
+        old_status = contract.status
+        contract.status = new_status
+        contract.save(update_fields=["status"])
+
+        ContractEvent.objects.create(
+            contract=contract,
+            from_status=old_status,
+            to_status=new_status,
+            triggered_by=actor,
+            note=note,
+        )
+
+        return contract
+
+    @staticmethod
+    def mark_delivered(contract_id, actor):
+        return ContractService._transition(
+            contract_id, actor, Contract.Status.DELIVERED, allowed_roles=["freelancer"]
+        )
+
+    @staticmethod
+    def mark_completed(contract_id, actor):
+        return ContractService._transition(
+            contract_id, actor, Contract.Status.COMPLETED, allowed_roles=["client"]
+        )
+
+    @staticmethod
+    def cancel(contract_id, actor, note=""):
+        return ContractService._transition(
+            contract_id, actor, Contract.Status.CANCELLED, allowed_roles=["client", "freelancer"], note=note
+        )
+
+    @staticmethod
+    def raise_dispute(contract_id, actor, note=""):
+        return ContractService._transition(
+            contract_id, actor, Contract.Status.DISPUTED, allowed_roles=["client", "freelancer"], note=note
+        )
