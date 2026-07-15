@@ -21,6 +21,9 @@ from drf_spectacular.utils import (
     OpenApiExample,
     OpenApiParameter,
 )
+from apps.contracts.services import ProposalService
+from django.core.exceptions import ValidationError as DjangoValidationError
+from rest_framework.exceptions import ValidationError, PermissionDenied
 
 @extend_schema(
     tags=["Projects"],
@@ -149,15 +152,15 @@ class ProposalViewSet(viewsets.ModelViewSet):
     )
     @action(detail=True, methods=["post"], url_path="accept")
     def accept(self, request, project_id=None, pk=None):
-        proposal = self.get_object_for_status_change(request, pk)
-        serializer = ProposalStatusUpdateSerializer(
-            data={"status": "ACCEPTED"},
-            context={"proposal": proposal},
-        )
-        serializer.is_valid(raise_exception=True)
-        proposal.status = Proposal.Status.ACCEPTED
-        proposal.save(update_fields=["status"])
-        return Response(ProposalReadSerializer(proposal).data)
+        try:
+            contract = ProposalService.accept(proposal_id=pk, actor=request.user)
+        except PermissionError as e:
+            raise PermissionDenied(str(e))
+        except DjangoValidationError as e:
+            raise ValidationError(str(e))
+
+        from apps.contracts.serializers import ContractReadSerializer
+        return Response(ContractReadSerializer(contract).data, status=201)
 
     
     @action(detail=True, methods=["post"], url_path="reject")
