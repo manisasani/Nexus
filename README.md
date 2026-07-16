@@ -497,3 +497,26 @@ development and enables:
 
 In production, only \`docker-compose.yml\` is used (no override), running
 Gunicorn against an immutable image build.
+
+## Contracts (Phase 8)
+
+When a client accepts a proposal, a Contract is automatically created,
+competing proposals are rejected, and the project is closed.
+
+### Contract Lifecycle
+
+\`\`\`
+ACTIVE → DELIVERED → COMPLETED
+      ↘ CANCELLED      ↘ DISPUTED
+\`\`\`
+
+| Action | Who | Endpoint |
+|---|---|---|
+| Accept proposal (creates contract) | Project owner | \`POST /api/v1/projects/{id}/proposals/{id}/accept/\` |
+| Mark delivered | Freelancer | \`POST /api/v1/contracts/{id}/deliver/\` |
+| Mark completed | Client | \`POST /api/v1/contracts/{id}/complete/\` |
+| Raise dispute | Either party | \`POST /api/v1/contracts/{id}/dispute/\` |
+| View contract | Client or freelancer | \`GET /api/v1/contracts/{id}/\` |
+
+All state transitions are atomic, idempotent, and logged in an audit
+trail (\`ContractEvent\`).

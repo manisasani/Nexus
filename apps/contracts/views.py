@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework.exceptions import ValidationError, PermissionDenied, NotFound
+from drf_spectacular.utils import extend_schema
 
 from .models import Contract
 from .serializers import ContractReadSerializer
@@ -47,9 +48,26 @@ class ContractActionView(APIView):
 class MarkDeliveredView(ContractActionView):
     service_method = staticmethod(ContractService.mark_delivered)
 
+    @extend_schema(
+        summary="Mark contract as delivered",
+        description="Only the freelancer on this contract can mark it as delivered. "
+                    "Contract must currently be ACTIVE.",
+        responses={200: ContractReadSerializer},
+    )
+    def post(self, request, pk):
+        return super().post(request, pk)
 
 class MarkCompletedView(ContractActionView):
     service_method = staticmethod(ContractService.mark_completed)
+
+    @extend_schema(
+        summary="Mark contract as delivered",
+        description="Only the freelancer on this contract can mark it as delivered. "
+                    "Contract must currently be ACTIVE.",
+        responses={200: ContractReadSerializer},
+    )
+    def post(self, request, pk):
+        return super().post(request, pk)
 
 
 class RaiseDisputeView(ContractActionView):
@@ -64,3 +82,12 @@ class RaiseDisputeView(ContractActionView):
         except DjangoValidationError as e:
             raise ValidationError(str(e))
         return Response(ContractReadSerializer(contract).data)
+    
+    @extend_schema(
+        summary="Mark contract as delivered",
+        description="Only the freelancer on this contract can mark it as delivered. "
+                    "Contract must currently be ACTIVE.",
+        responses={200: ContractReadSerializer},
+    )
+    def post(self, request, pk):
+        return super().post(request, pk)

@@ -171,3 +171,19 @@ PostgreSQL's row-level locking, which `select_for_update()` relies on.
 **Status:** Test suite currently runs on SQLite for speed (Phase 7 decision).
 This specific test should be verified against real PostgreSQL periodically,
 or moved to a dedicated integration test suite that runs against Postgres.
+
+## 13. Dispute resolution is a flag only
+
+**Issue:** Raising a dispute marks the contract as DISPUTED but has no
+resolution workflow, no admin ticketing, and no automatic escalation.
+
+**Status:** Intentionally basic for Phase 8. Full ticketing system
+planned for Phase 13.
+
+## 14. No escrow or milestone payments yet
+
+**Issue:** `agreed_price` is stored but no money actually moves. Contract
+completion has no financial consequence yet.
+
+**Status:** Intentionally postponed — escrow and milestone payments are
+future phases, not part of Phase 8's scope.
