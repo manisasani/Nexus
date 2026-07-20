@@ -3,6 +3,8 @@ from django.db import transaction
 from django.core.exceptions import ValidationError
 from apps.projects.models import Project, Proposal
 from .models import Contract, ContractEvent
+from apps.wallets.services import WalletService
+from apps.wallets.models import Wallet
 
 
 class ProposalService:
@@ -68,7 +70,7 @@ class ProposalService:
 
         return contract
     
-# apps/contracts/services.py (ادامه)
+
 
 class ContractService:
 
@@ -124,10 +126,28 @@ class ContractService:
         )
 
     @staticmethod
+    @transaction.atomic
     def mark_completed(contract_id, actor):
-        return ContractService._transition(
+        contract = ContractService._transition(
             contract_id, actor, Contract.Status.COMPLETED, allowed_roles=["client"]
         )
+
+        
+        if contract.status == Contract.Status.COMPLETED:
+            client_wallet = Wallet.objects.get(user_id=contract.client_id)
+            freelancer_wallet = Wallet.objects.get(user_id=contract.freelancer_id)
+
+            amount_cents = int(contract.agreed_price * 100)  
+
+            WalletService.transfer(
+                from_wallet_id=client_wallet.id,
+                to_wallet_id=freelancer_wallet.id,
+                amount=amount_cents,
+                reference=f"Contract #{contract.id} settlement",
+                idempotency_key=f"contract-settlement:{contract.id}",
+            )
+
+        return contract
 
     @staticmethod
     def cancel(contract_id, actor, note=""):
