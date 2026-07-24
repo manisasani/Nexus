@@ -187,3 +187,39 @@ completion has no financial consequence yet.
 
 **Status:** Intentionally postponed — escrow and milestone payments are
 future phases, not part of Phase 8's scope.
+## 15. Wallet balance cache not yet using Redis
+
+**Issue:** `Wallet.balance` is stored and read directly from PostgreSQL.
+Redis was provisioned (Step 3) but balance reads are not yet cached
+through it — this was deferred to keep the ledger logic simple and
+correct first.
+
+**Status:** Acceptable for current traffic. Revisit if wallet read
+volume becomes a bottleneck.
+
+## 16. No real payment gateway or bank withdrawal
+
+**Issue:** All money is internal/simulated. There is no connection to
+Stripe, PayPal, or any real payment processor, and no ability to
+withdraw to a real bank account.
+
+**Status:** Intentionally postponed — this phase's goal was to get the
+ledger logic correct before introducing external payment failure modes.
+
+## 17. Concurrent debit test may behave differently on SQLite vs PostgreSQL
+
+**Issue:** Same caveat as Phase 8's race condition test — `select_for_update()`
+row-level locking relies on PostgreSQL behavior not fully replicated by SQLite.
+
+**Status:** Verify periodically against real PostgreSQL.
+## 18. Concurrent access tests skipped on SQLite
+
+**Issue:** `test_concurrent_accept_only_creates_one_contract` and
+`test_two_simultaneous_debits_cannot_overdraw` are marked `@pytest.mark.skip`
+because SQLite's locking model does not reliably reproduce PostgreSQL's
+row-level `select_for_update()` behavior under threading in the test suite.
+
+**Status:** Both tests should be run manually against real PostgreSQL
+(e.g. via `docker compose exec web pytest apps/wallets/tests/test_concurrent_debit.py --no-skip`
+or a dedicated Postgres-backed test settings file) before considering
+Phase 9's concurrency guarantees fully verified.

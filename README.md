@@ -520,3 +520,26 @@ ACTIVE → DELIVERED → COMPLETED
 
 All state transitions are atomic, idempotent, and logged in an audit
 trail (\`ContractEvent\`).
+
+## How the Wallet System Works (Plain-Language Explanation)
+
+Instead of storing a single "balance" number that gets directly edited,
+Nexus records every financial event separately — like entries in a
+bank statement, not just a single account total.
+
+Think of it like your personal bank account: your bank doesn't just
+store "you have $500." It stores every deposit and withdrawal you've
+ever made, and your balance is simply the sum of all of them. If
+something looks wrong, the bank (and you) can trace back through every
+transaction to find the mistake.
+
+Nexus works the same way:
+- Every credit (money coming in) and debit (money going out) is
+  recorded as a permanent, unchangeable entry.
+- The wallet's balance is calculated from these entries and cached for
+  speed — but it can always be recalculated and verified from scratch.
+- No transaction can ever be silently duplicated: each one carries a
+  unique "idempotency key," so accidentally clicking "pay" twice never
+  charges twice.
+- The system physically cannot let a balance go negative — this is
+  enforced by the database itself, not just application code.
