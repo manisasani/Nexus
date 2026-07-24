@@ -18,15 +18,7 @@ def custom_exception_handler(exc, context):
     response = exception_handler(exc, context)
 
     if response is None:
-        # یک استثنای پیش‌بینی‌نشده که DRF خودش نمی‌شناسه (مثلاً یک باگ واقعی)
-        return Response(
-            {
-                "detail": "An unexpected error occurred.",
-                "code": "server_error",
-                "errors": {},
-            },
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        )
+        raise exc
 
     code = ERROR_CODE_MAP.get(response.status_code, "error")
 

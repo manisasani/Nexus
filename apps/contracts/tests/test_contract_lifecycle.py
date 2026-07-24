@@ -3,6 +3,8 @@ from rest_framework.test import APIClient
 from apps.projects.factories import OpenProjectFactory, ProposalFactory
 from apps.contracts.services import ProposalService, ContractService
 from apps.contracts.models import Contract
+from apps.wallets.models import Wallet
+from apps.wallets.services import WalletService
 
 
 @pytest.mark.django_db
@@ -10,6 +12,8 @@ class TestFullHappyPath:
     def test_post_project_propose_accept_deliver_complete(self):
         project = OpenProjectFactory()
         proposal = ProposalFactory(project=project)
+        client_wallet = Wallet.objects.get(user=project.owner)
+        WalletService.credit(client_wallet.id, 100000, "test funding", "fund-happy-path")
 
         # Accept
         contract = ProposalService.accept(proposal_id=proposal.id, actor=project.owner)
@@ -57,6 +61,8 @@ class TestInvalidTransitions:
     def test_cannot_transition_from_completed(self):
         project = OpenProjectFactory()
         proposal = ProposalFactory(project=project)
+        client_wallet = Wallet.objects.get(user=project.owner)
+        WalletService.credit(client_wallet.id, 100000, "test funding", "fund-invalid-transition")
         contract = ProposalService.accept(proposal_id=proposal.id, actor=project.owner)
         contract = ContractService.mark_delivered(contract.id, actor=contract.freelancer)
         contract = ContractService.mark_completed(contract.id, actor=contract.client)

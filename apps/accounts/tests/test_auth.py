@@ -13,6 +13,8 @@ class TestRegistration:
             "password": "StrongPass123!",
             "role": "CLIENT",
         })
+        print(response.status_code)
+        print(response.data)
         assert response.status_code == 201
         assert CustomUser.objects.filter(email="newclient@example.com").exists()
 
