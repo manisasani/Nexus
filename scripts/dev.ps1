@@ -50,3 +50,6 @@ switch ($command) {
         Write-Host "bash"
     }
 }
+
+"celery-logs" { docker compose logs -f celery_worker }
+"celery-shell" { docker compose exec celery_worker sh }
