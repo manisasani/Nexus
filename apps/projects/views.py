@@ -3,6 +3,9 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
+from apps.notifications.tasks import send_new_proposal_email
+from apps.notifications.models import Notification
+
 
 from .models import Project, Proposal
 from .permissions import IsClient, IsFreelancer, IsOwner, IsProposalOwnerPending
@@ -129,7 +132,16 @@ class ProposalViewSet(viewsets.ModelViewSet):
         return context
 
     def perform_create(self, serializer):
-        serializer.save()
+        proposal = serializer.save()
+
+        Notification.objects.create(
+            recipient=proposal.project.owner,
+            notification_type=Notification.NotificationType.NEW_PROPOSAL,
+            message=f"New proposal from {proposal.freelancer.email} on '{proposal.project.title}'",
+            reference=f"proposal:{proposal.id}",
+        )
+
+        send_new_proposal_email.delay(proposal.id)
 
     @extend_schema(
         summary="Accept a proposal",

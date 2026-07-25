@@ -36,3 +36,45 @@ def send_new_proposal_email(self, proposal_id):
     except Exception as exc:
         logger.error(f"Failed to send new-proposal email for proposal {proposal_id}: {exc}")
         raise self.retry(exc=exc)
+
+@shared_task(bind=True, max_retries=3, retry_backoff=True)
+def send_proposal_accepted_email(self, contract_id):
+    from apps.contracts.models import Contract
+
+    try:
+        contract = Contract.objects.select_related("freelancer", "project").get(id=contract_id)
+    except Contract.DoesNotExist:
+        logger.warning(f"send_proposal_accepted_email: Contract {contract_id} not found.")
+        return
+
+    try:
+        send_mail(
+            subject=f"Your proposal was accepted!",
+            message=f"Your proposal on '{contract.project.title}' was accepted. Contract #{contract.id} is now active.",
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[contract.freelancer.email],
+        )
+        logger.info(f"Sent proposal-accepted email for contract {contract_id}")
+    except Exception as exc:
+        raise self.retry(exc=exc)
+
+@shared_task(bind=True, max_retries=3, retry_backoff=True)
+def send_contract_delivered_email(self, contract_id):
+    from apps.contracts.models import Contract
+
+    try:
+        contract = Contract.objects.select_related("client", "project").get(id=contract_id)
+    except Contract.DoesNotExist:
+        logger.warning(f"send_contract_delivered_email: Contract {contract_id} not found.")
+        return
+
+    try:
+        send_mail(
+            subject=f"Work delivered on '{contract.project.title}'",
+            message=f"The freelancer marked contract #{contract.id} as delivered. Please review and confirm completion.",
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[contract.client.email],
+        )
+        logger.info(f"Sent contract-delivered email for contract {contract_id}")
+    except Exception as exc:
+        raise self.retry(exc=exc)

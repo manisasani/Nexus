@@ -5,8 +5,10 @@ from apps.projects.models import Project, Proposal
 from .models import Contract, ContractEvent
 from apps.wallets.services import WalletService
 from apps.wallets.models import Wallet
-
-
+from apps.notifications.tasks import send_proposal_accepted_email
+from apps.notifications.tasks import send_contract_delivered_email
+from apps.notifications.models import Notification
+from django.db import transaction
 class ProposalService:
 
     @staticmethod
@@ -45,6 +47,16 @@ class ProposalService:
             freelancer=proposal.freelancer,
             agreed_price=proposal.bid_amount,
             status=Contract.Status.ACTIVE,
+        )
+
+        Notification.objects.create(
+        recipient=contract.freelancer,
+        notification_type=Notification.NotificationType.PROPOSAL_ACCEPTED,
+        message=f"Your proposal on '{project.title}' was accepted!",
+        reference=f"contract:{contract.id}",
+        )
+        transaction.on_commit(
+            lambda: send_proposal_accepted_email.delay(contract.id)
         )
 
         ContractEvent.objects.create(
@@ -120,10 +132,20 @@ class ContractService:
         return contract
 
     @staticmethod
+    @transaction.atomic
     def mark_delivered(contract_id, actor):
-        return ContractService._transition(
-            contract_id, actor, Contract.Status.DELIVERED, allowed_roles=["freelancer"]
+        contract = ContractService._transition(
+            contract_id,
+            actor,
+            Contract.Status.DELIVERED,
+            allowed_roles=["freelancer"],
         )
+
+        transaction.on_commit(
+            lambda: send_contract_delivered_email.delay(contract.id)
+        )
+
+        return contract
 
     @staticmethod
     @transaction.atomic
