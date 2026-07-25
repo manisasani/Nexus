@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     'apps.projects.apps.ProjectsConfig',
     'apps.contracts.apps.ContractsConfig',
     'apps.wallets.apps.WalletsConfig', 
+    'apps.notifications.apps.NotificationsConfig'
 ]
 
 MIDDLEWARE = [
