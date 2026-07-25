@@ -148,3 +148,10 @@ CACHES = {
         },
     }
 }
+
+CELERY_BROKER_URL = env("REDIS_URL_CELERY", default="redis://redis:6379/1")
+CELERY_RESULT_BACKEND = env("REDIS_URL_CELERY", default="redis://redis:6379/1")
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_TIMEZONE = TIME_ZONE
