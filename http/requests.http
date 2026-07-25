@@ -283,3 +283,17 @@ Authorization: Bearer {{freelancerToken}}
 ### Check transaction history
 GET {{baseUrl}}/wallet/transactions/
 Authorization: Bearer {{clientToken}}
+
+### Create a proposal (should trigger email + notification)
+POST {{baseUrl}}/projects/{{projectId}}/proposals/
+Authorization: Bearer {{freelancerToken}}
+Content-Type: application/json
+
+{
+  "cover_letter": "Testing Celery notifications",
+  "bid_amount": "300.00"
+}
+
+### Check in-app notifications for the client
+GET {{baseUrl}}/notifications/
+Authorization: Bearer {{clientToken}}
