@@ -543,3 +543,30 @@ Nexus works the same way:
   charges twice.
 - The system physically cannot let a balance go negative — this is
   enforced by the database itself, not just application code.
+
+
+## Background Tasks (Phase 10)
+
+Nexus uses Celery with Redis as the message broker for async work
+(currently: email notifications).
+
+### Inspecting failed tasks
+
+\`\`\`bash
+# Tail worker logs (shows retries and failures)
+docker compose logs -f celery_worker
+
+# Check a specific task's status in the Django shell
+from celery.result import AsyncResult
+result = AsyncResult("task-id-here")
+print(result.status, result.traceback)
+\`\`\`
+
+### Adding a new notification task
+
+1. Write the task in \`apps/notifications/tasks.py\`, accepting only IDs
+   (never model instances).
+2. Set \`max_retries\` and use \`retry_backoff=True\`.
+3. Dispatch it with \`transaction.on_commit(lambda: my_task.delay(id))\`
+   if called inside a \`@transaction.atomic\` block.
+4. Add an eager-mode test verifying \`django.core.mail.outbox\`.

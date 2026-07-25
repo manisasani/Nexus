@@ -223,3 +223,21 @@ row-level `select_for_update()` behavior under threading in the test suite.
 (e.g. via `docker compose exec web pytest apps/wallets/tests/test_concurrent_debit.py --no-skip`
 or a dedicated Postgres-backed test settings file) before considering
 Phase 9's concurrency guarantees fully verified.
+
+## 19. No dead-letter queue or task monitoring dashboard
+
+**Issue:** Failed tasks (after exhausting retries) are only visible in
+worker logs. There's no Flower dashboard or persistent dead-letter queue
+for tracking permanently failed tasks.
+
+**Status:** Acceptable for current scale. Consider adding Flower
+(`celery flower`) or a dead-letter table if notification reliability
+becomes critical.
+
+## 20. Celery Beat has no scheduled tasks yet
+
+**Issue:** The beat container runs but has zero periodic tasks configured
+— it was provisioned ahead of need per Phase 10's design.
+
+**Status:** Intentional. Will be used when periodic tasks (e.g. digest
+emails, cleanup jobs) are introduced in a later phase.
