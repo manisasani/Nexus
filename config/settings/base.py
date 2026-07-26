@@ -118,6 +118,8 @@ REST_FRAMEWORK = {
     "DEFAULT_THROTTLE_RATES": {
         "login": "5/min",
         "register": "3/min",
+        "otp_request": "3/min",  
+        "otp_verify": "5/min",
     },
 
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",

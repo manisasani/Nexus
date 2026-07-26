@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
 from .models import CustomUser
+from .validators import validate_e164_phone
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, validators=[validate_password])
@@ -51,3 +52,11 @@ class PasswordChangeSerializer(serializers.Serializer):
         user.set_password(self.validated_data["new_password"])
         user.save(update_fields=["password"])
         return user
+
+class OTPRequestSerializer(serializers.Serializer):
+    phone_number = serializers.CharField(validators=[validate_e164_phone])
+
+
+class OTPVerifySerializer(serializers.Serializer):
+    phone_number = serializers.CharField(validators=[validate_e164_phone])
+    code = serializers.CharField(min_length=6, max_length=6)
