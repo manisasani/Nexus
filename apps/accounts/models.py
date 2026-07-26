@@ -2,6 +2,8 @@ from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 from django.core.exceptions import ValidationError
 
+from apps.accounts.validators import validate_e164_phone
+
 
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
@@ -36,7 +38,10 @@ class CustomUser(AbstractUser):
 
     username = models.CharField(max_length=150, blank=True, null=True, unique=False)
     email = models.EmailField(unique=True)
-    phone = models.CharField(max_length=15, blank=True, null=True)
+    phone = models.CharField(
+        max_length=15, blank=True, null=True, unique=True,
+        validators=[validate_e164_phone],
+        )
     role = models.CharField(
         max_length=20,
         choices=Role.choices,
