@@ -33,3 +33,5 @@ CACHES = {
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 DEFAULT_FROM_EMAIL = "noreply@nexus.local"
+
+SMS_BACKEND = "console"
