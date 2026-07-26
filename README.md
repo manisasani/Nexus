@@ -570,3 +570,15 @@ print(result.status, result.traceback)
 3. Dispatch it with \`transaction.on_commit(lambda: my_task.delay(id))\`
    if called inside a \`@transaction.atomic\` block.
 4. Add an eager-mode test verifying \`django.core.mail.outbox\`.
+
+## ⚠️ Celery Beat: Single Instance Only
+
+Unlike Celery workers (which can be scaled horizontally), **only one
+Celery Beat instance may run at a time**, in any environment. Running
+multiple Beat instances causes scheduled tasks to be enqueued multiple
+times, leading to duplicate work or resource waste.
+
+If deploying to a platform with auto-scaling, ensure the Beat service is
+pinned to exactly one replica (e.g. `replicas: 1` in Docker Swarm/K8s, or
+a dedicated single-instance deployment separate from the scalable worker
+pool).
