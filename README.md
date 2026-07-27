@@ -582,3 +582,41 @@ If deploying to a platform with auto-scaling, ensure the Beat service is
 pinned to exactly one replica (e.g. `replicas: 1` in Docker Swarm/K8s, or
 a dedicated single-instance deployment separate from the scalable worker
 pool).
+
+## Phone OTP Authentication (Phase 11)
+
+### Flow
+
+1. `POST /api/v1/auth/otp/request/` with `{"phone_number": "+989123456789"}`
+   → SMS sent (or logged to console in dev/test), 200 response.
+2. `POST /api/v1/auth/otp/verify/` with `{"phone_number": "...", "code": "123456"}`
+   → Returns `{"access": "...", "refresh": "...", "created": true/false}`.
+
+### Rate Limits
+
+| Endpoint | Limit | Scope |
+|---|---|---|
+| OTP request | 3/min | Per phone number |
+| OTP verify | 5/min | Per phone number |
+| OTP verify (service-level) | 5 attempts | Per phone number, resets on new OTP |
+
+### Security Notes
+
+- OTP codes are hashed (SHA-256) before storage in Redis — never stored
+  or logged in plaintext.
+- OTP codes expire after 5 minutes (Redis TTL).
+- OTP codes are single-use — deleted immediately after successful verification.
+
+### SMS Backend
+
+Controlled by `SMS_BACKEND` setting: `console` (dev/test, logs to
+console) or `twilio` (production, requires `TWILIO_*` env vars).
+
+## Scheduled Tasks (Celery Beat)
+
+| Task | Schedule | Purpose |
+|---|---|---|
+| `close_stale_open_projects` | Daily at 03:00 | Closes OPEN projects with no activity for 30+ days |
+| `purge_expired_otps` | Hourly | No-op (Redis TTL handles this); reserved for future metrics |
+
+⚠️ **Only one Celery Beat instance may run at a time** — see warning above.

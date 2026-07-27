@@ -83,10 +83,10 @@ class TestOTPRateLimiting:
         })
         assert response.status_code in (400, 429)
 
-def test_otp_stored_hashed_not_plaintext(self):
-    phone = "+989123456784"
-    otp_code = OTPService.generate_and_store(phone)
+    def test_otp_stored_hashed_not_plaintext(self):
+        phone = "+989123456784"
+        otp_code = OTPService.generate_and_store(phone)
 
-    stored_value = cache.get(f"otp:{phone}")
-    assert stored_value != otp_code  
-    assert len(stored_value) == 64 
+        stored_value = cache.get(f"otp:{phone}")
+        assert stored_value != otp_code  
+        assert len(stored_value) == 64 

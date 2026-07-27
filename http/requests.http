@@ -297,3 +297,29 @@ Content-Type: application/json
 ### Check in-app notifications for the client
 GET {{baseUrl}}/notifications/
 Authorization: Bearer {{clientToken}}
+
+
+### Request OTP
+POST {{baseUrl}}/auth/otp/request/
+Content-Type: application/json
+
+{
+  "phone_number": "+989123456789"
+}
+
+### Check console/logs for the OTP code, then verify
+POST {{baseUrl}}/auth/otp/verify/
+Content-Type: application/json
+
+{
+  "phone_number": "+989123456789",
+  "code": "PASTE_CODE_FROM_CONSOLE_HERE"
+}
+
+### Test rate limit: repeat request 4+ times quickly -> expect 429
+POST {{baseUrl}}/auth/otp/request/
+Content-Type: application/json
+
+{
+  "phone_number": "+989123456789"
+}

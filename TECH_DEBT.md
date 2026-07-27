@@ -241,3 +241,21 @@ becomes critical.
 
 **Status:** Intentional. Will be used when periodic tasks (e.g. digest
 emails, cleanup jobs) are introduced in a later phase.
+
+## 21. New phone-based users get a default role without explicit choice
+
+**Issue:** `OTPVerifyView` assigns `role=FREELANCER` by default to newly
+created phone-based accounts, without asking the user to choose CLIENT
+vs FREELANCER.
+
+**Status:** Acceptable simplification for Phase 11. A proper onboarding
+step (role selection after first OTP login) should be added before this
+becomes a primary registration path.
+
+## 22. purge_expired_otps task is currently a no-op
+
+**Issue:** Since OTPs are stored in Redis with TTL, this scheduled task
+does nothing meaningful yet — it exists as a placeholder for future
+metrics/logging.
+
+**Status:** Intentional. Revisit if OTP analytics become necessary.

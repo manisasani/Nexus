@@ -64,7 +64,7 @@ class OTPRequestView(APIView):
         otp_code = OTPService.generate_and_store(phone_number)
         SMSService.send_otp_sms(phone_number, otp_code)
 
-        return Response({"detail": "OTP sent."}, status=status.HTTP_200_OK)
+        return Response({"detail": "Request accepted."}, status=status.HTTP_200_OK)
 
 
 class OTPVerifyView(APIView):
@@ -83,8 +83,11 @@ class OTPVerifyView(APIView):
             raise DRFValidationError(str(e))
 
         user, created = CustomUser.objects.get_or_create(
-            phone_number=phone_number,
-            defaults={"role": CustomUser.Role.FREELANCER, "email": None},
+            phone=phone_number,
+            defaults={
+                "role": CustomUser.Role.FREELANCER,
+                "email": f"{phone_number}@otp.local",
+            },
         )
 
         refresh = RefreshToken.for_user(user)
