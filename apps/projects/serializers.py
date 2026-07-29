@@ -79,7 +79,8 @@ class ProposalReadSerializer(serializers.ModelSerializer):
 class ProposalCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Proposal
-        fields = ('bid_amount', 'cover_letter')
+        fields = ('id', 'bid_amount', 'cover_letter', 'status')
+        read_only_fields = ('id', 'status')
     
     def validate_bid_amount(self, bid_amount):
         if bid_amount <= 0:

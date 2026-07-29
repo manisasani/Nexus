@@ -132,7 +132,7 @@ Content-Type: application/json
 
 ###
 
-@proposalId = 7
+@proposalId = {{createProposal.response.body.id}}
 
 ### 7. CLIENT (owner) lists all proposals on their project
 GET {{baseUrl}}/projects/{{projectId}}/proposals/
@@ -149,8 +149,12 @@ Content-Type: application/json
 }
 
 ### 9. CLIENT accepts the proposal
+# @name acceptProposal
 POST {{baseUrl}}/projects/{{projectId}}/proposals/{{proposalId}}/accept/
 Authorization: Bearer {{clientToken}}
+
+###
+@contractId = {{acceptProposal.response.body.id}}
 
 ### =========================================
 ### FAILURE PATHS
@@ -323,3 +327,20 @@ Content-Type: application/json
 {
   "phone_number": "+989123456789"
 }
+
+### Freelancer delivers the contract
+POST {{baseUrl}}/contracts/{{contractId}}/deliver/
+Authorization: Bearer {{freelancerToken}}
+
+### Raise a dispute on a contract → should auto-create a ticket
+POST {{baseUrl}}/contracts/{{contractId}}/dispute/
+Authorization: Bearer {{clientToken}}
+Content-Type: application/json
+
+{
+  "note": "Freelancer did not deliver as agreed."
+}
+
+### Check that a ticket was created linked to this contract
+GET {{baseUrl}}/tickets/mine/
+Authorization: Bearer {{clientToken}}

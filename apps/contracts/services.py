@@ -1,4 +1,3 @@
-# apps/contracts/services.py
 from django.db import transaction
 from django.core.exceptions import ValidationError
 from apps.projects.models import Project, Proposal
@@ -9,6 +8,7 @@ from apps.notifications.tasks import send_proposal_accepted_email
 from apps.notifications.tasks import send_contract_delivered_email
 from apps.notifications.models import Notification
 from django.db import transaction
+from apps.tickets.models import Ticket
 class ProposalService:
 
     @staticmethod
@@ -179,6 +179,21 @@ class ContractService:
 
     @staticmethod
     def raise_dispute(contract_id, actor, note=""):
-        return ContractService._transition(
+        contract = ContractService._transition(
             contract_id, actor, Contract.Status.DISPUTED, allowed_roles=["client", "freelancer"], note=note
         )
+
+        if contract.status == Contract.Status.DISPUTED:
+            existing_ticket = Ticket.objects.filter(
+                contract=contract, category=Ticket.Category.DISPUTE
+            ).exclude(status=Ticket.Status.CLOSED).first()
+
+            if not existing_ticket:
+                Ticket.objects.create(
+                    subject=f"Dispute on Contract #{contract.id}",
+                    category=Ticket.Category.DISPUTE,
+                    opened_by=actor,
+                    contract=contract,
+                )
+
+        return contract

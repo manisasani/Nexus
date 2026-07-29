@@ -71,6 +71,13 @@ class MarkCompletedView(ContractActionView):
 
 
 class RaiseDisputeView(ContractActionView):
+
+    @extend_schema(
+        summary="Raise a dispute on a contract",
+        description="Either the client or freelancer can raise a dispute. "
+                    "Contract must currently be DELIVERED.",
+        responses={200: ContractReadSerializer},
+    )
     def post(self, request, pk):
         note = request.data.get("note", "")
         try:
@@ -82,12 +89,3 @@ class RaiseDisputeView(ContractActionView):
         except DjangoValidationError as e:
             raise ValidationError(str(e))
         return Response(ContractReadSerializer(contract).data)
-    
-    @extend_schema(
-        summary="Mark contract as delivered",
-        description="Only the freelancer on this contract can mark it as delivered. "
-                    "Contract must currently be ACTIVE.",
-        responses={200: ContractReadSerializer},
-    )
-    def post(self, request, pk):
-        return super().post(request, pk)
