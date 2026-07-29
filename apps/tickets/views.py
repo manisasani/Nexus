@@ -5,6 +5,8 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.views import APIView
 from rest_framework.exceptions import PermissionDenied, NotFound
 from django.db import transaction
+
+from apps.tickets.filters import TicketFilter
 from .tasks import send_staff_reply_email
 
 from .models import Ticket, TicketMessage
@@ -20,7 +22,7 @@ from .serializers import (
 
 class TicketViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ["status"]
+    filterset_class = TicketFilter
 
     def get_permissions(self):
         if self.action in ["update", "partial_update"]:
