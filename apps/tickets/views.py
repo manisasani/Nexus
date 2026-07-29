@@ -4,6 +4,8 @@ from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.views import APIView
 from rest_framework.exceptions import PermissionDenied, NotFound
+from django.db import transaction
+from .tasks import send_staff_reply_email
 
 from .models import Ticket, TicketMessage
 from .permissions import IsStaffUser, IsTicketOwnerOrStaff
@@ -78,4 +80,12 @@ class TicketMessageCreateView(APIView):
             is_staff_reply=user.is_staff,
         )
 
-        return Response(TicketMessageSerializer(message).data, status=status.HTTP_201_CREATED)
+        if message.is_staff_reply:
+            transaction.on_commit(
+                lambda: send_staff_reply_email.delay(message.id)
+            )
+
+        return Response(
+            TicketMessageSerializer(message).data,
+            status=status.HTTP_201_CREATED,
+        )
