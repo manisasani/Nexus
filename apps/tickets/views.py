@@ -24,6 +24,21 @@ class TicketViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend]
     filterset_class = TicketFilter
 
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        ticket = serializer.save(opened_by=request.user)
+
+        read_serializer = TicketReadSerializer(ticket)
+        headers = self.get_success_headers(read_serializer.data)
+
+        return Response(
+            read_serializer.data,
+            status=status.HTTP_201_CREATED,
+            headers=headers,
+        )
+
     def get_permissions(self):
         if self.action in ["update", "partial_update"]:
             return [permissions.IsAuthenticated(), IsStaffUser()]
