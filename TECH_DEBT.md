@@ -259,3 +259,19 @@ does nothing meaningful yet — it exists as a placeholder for future
 metrics/logging.
 
 **Status:** Intentional. Revisit if OTP analytics become necessary.
+
+## 23. No SLA timers or CSAT surveys
+
+**Status:** Intentionally postponed per Phase 13 scope.
+
+## 24. No AI auto-reply suggestions for staff
+
+**Status:** Intentionally postponed per Phase 13 scope.
+
+## 25. Ticket categories are fixed choices, not admin-configurable
+
+**Issue:** `Ticket.Category` is a hardcoded TextChoices enum. Adding a
+new category requires a code change + migration, not an admin UI change.
+
+**Status:** Acceptable for current scale. Revisit if category needs
+change frequently.

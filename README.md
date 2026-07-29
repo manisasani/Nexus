@@ -620,3 +620,32 @@ console) or `twilio` (production, requires `TWILIO_*` env vars).
 | `purge_expired_otps` | Hourly | No-op (Redis TTL handles this); reserved for future metrics |
 
 ⚠️ **Only one Celery Beat instance may run at a time** — see warning above.
+
+## Support Ticketing (Phase 13)
+
+### Access Rules
+
+| Who | Can see |
+|---|---|
+| Regular user | Only their own tickets |
+| Staff (`is_staff=True`) | All tickets |
+
+### Endpoints
+
+| Method | Endpoint | Who |
+|---|---|---|
+| POST | `/api/v1/tickets/` | Any authenticated user |
+| GET | `/api/v1/tickets/` | Own tickets (staff sees all) |
+| GET | `/api/v1/tickets/mine/` | Own tickets only |
+| GET | `/api/v1/tickets/{id}/` | Owner or staff |
+| PATCH | `/api/v1/tickets/{id}/` | Staff only (status, resolution) |
+| POST | `/api/v1/tickets/{id}/messages/` | Owner or staff |
+
+### Dispute Integration
+
+Raising a dispute on a contract (`POST /contracts/{id}/dispute/`)
+automatically creates a linked support ticket with `category=DISPUTE`.
+
+### Notifications
+
+Staff replies trigger an async email (via Celery) to the ticket opener.

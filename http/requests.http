@@ -9,6 +9,8 @@
 @otherClientEmail = client2@example.com
 @otherClientPassword = clientpass456
 
+@ticketId = 5
+@staffToken ={{adminLogin.response.body.access}}
 
 ### =========================================
 ### Health Check
@@ -344,3 +346,36 @@ Content-Type: application/json
 ### Check that a ticket was created linked to this contract
 GET {{baseUrl}}/tickets/mine/
 Authorization: Bearer {{clientToken}}
+
+### User opens a ticket
+POST {{baseUrl}}/tickets/
+Authorization: Bearer {{clientToken}}
+Content-Type: application/json
+
+{
+  "subject": "Question about my payment",
+  "category": "PAYMENT"
+}
+
+### Other client tries to see it -> expect empty list or 403/404
+GET {{baseUrl}}/tickets/
+Authorization: Bearer {{otherClientToken}}
+
+### Staff replies
+POST {{baseUrl}}/tickets/{{ticketId}}/messages/
+Authorization: Bearer {{staffToken}}
+Content-Type: application/json
+
+{
+  "body": "We're looking into this, thanks for your patience."
+}
+
+### Staff closes with resolution
+PATCH {{baseUrl}}/tickets/{{ticketId}}/
+Authorization: Bearer {{staffToken}}
+Content-Type: application/json
+
+{
+  "status": "RESOLVED",
+  "resolution": "Payment was confirmed and applied correctly."
+}
