@@ -15,6 +15,8 @@ env = environ.Env(
 environ.Env.read_env(BASE_DIR / ".env")
 
 INSTALLED_APPS = [
+    "daphne",  
+    "django.contrib.admin",
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -25,6 +27,7 @@ INSTALLED_APPS = [
     'rest_framework',
     "rest_framework_simplejwt.token_blacklist",
     "drf_spectacular",
+    "channels",
 
     'apps.accounts.apps.AccountsConfig',
     'apps.core.apps.CoreConfig',
@@ -159,3 +162,14 @@ CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_TIMEZONE = TIME_ZONE
+
+ASGI_APPLICATION = "config.asgi.application"
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [env("REDIS_URL_CHANNELS", default="redis://redis:6379/2")],
+        },
+    },
+}
