@@ -9,6 +9,8 @@ from apps.notifications.tasks import send_contract_delivered_email
 from apps.notifications.models import Notification
 from django.db import transaction
 from apps.tickets.models import Ticket
+from apps.chat.models import ChatRoom
+
 class ProposalService:
 
     @staticmethod
@@ -48,6 +50,8 @@ class ProposalService:
             agreed_price=proposal.bid_amount,
             status=Contract.Status.ACTIVE,
         )
+        
+        ChatRoom.objects.create(contract=contract)
 
         Notification.objects.create(
         recipient=contract.freelancer,

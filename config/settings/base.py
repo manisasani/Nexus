@@ -15,8 +15,7 @@ env = environ.Env(
 environ.Env.read_env(BASE_DIR / ".env")
 
 INSTALLED_APPS = [
-    "daphne",  
-    "django.contrib.admin",
+    "daphne",
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -36,6 +35,7 @@ INSTALLED_APPS = [
     'apps.wallets.apps.WalletsConfig', 
     'apps.notifications.apps.NotificationsConfig',
     'apps.tickets.apps.TicketsConfig',
+    'apps.chat.apps.ChatConfig',
 ]
 
 MIDDLEWARE = [
