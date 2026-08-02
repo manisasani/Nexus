@@ -649,3 +649,9 @@ automatically creates a linked support ticket with `category=DISPUTE`.
 ### Notifications
 
 Staff replies trigger an async email (via Celery) to the ticket opener.
+
+## ASGI Server (Phase 14)
+
+Nexus now runs on Daphne (ASGI) instead of Gunicorn (WSGI), to support
+both regular HTTP requests and WebSocket connections through the same
+process (`config.asgi:application`).

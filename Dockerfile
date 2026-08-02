@@ -9,7 +9,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt /app/requirements.txt
-RUN pip install --user --no-cache-dir -r /app/requirements.txt
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --user -r /app/requirements.txt
 
 
 # ---------- Stage 2: Runtime ----------
