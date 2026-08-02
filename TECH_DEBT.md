@@ -275,3 +275,30 @@ new category requires a code change + migration, not an admin UI change.
 
 **Status:** Acceptable for current scale. Revisit if category needs
 change frequently.
+
+## 26. JWT passed as WebSocket query parameter
+
+**Issue:** Access tokens are passed via `?token=` in the WebSocket URL.
+This risks the token appearing in server/proxy access logs.
+
+**Status:** Acceptable for Phase 14 given HTTPS/WSS is used, but consider
+issuing short-lived, WebSocket-specific tokens (separate from the main
+API access token) in a future hardening pass, or move to first-message
+authentication.
+
+## 27. No horizontal scaling test for channel layer
+
+**Issue:** The Redis channel layer theoretically supports multiple ASGI
+worker processes broadcasting to each other, but this has not been
+load-tested with more than one Daphne instance.
+
+**Status:** Acceptable for current single-instance deployment. Revisit
+before scaling chat horizontally.
+
+## 28. No message editing or deletion
+
+**Status:** Intentionally out of scope for Phase 14.
+
+## 29. No typing indicators or online presence
+
+**Status:** Intentionally postponed — not required for MVP chat.

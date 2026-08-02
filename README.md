@@ -655,3 +655,50 @@ Staff replies trigger an async email (via Celery) to the ticket opener.
 Nexus now runs on Daphne (ASGI) instead of Gunicorn (WSGI), to support
 both regular HTTP requests and WebSocket connections through the same
 process (`config.asgi:application`).
+
+## Real-Time Chat (Phase 14)
+
+### Architecture
+
+Nexus uses Django Channels with a Redis-backed channel layer to support
+WebSocket connections alongside regular HTTP, both served by Daphne (ASGI).
+
+### Connecting
+
+\`\`\`
+wss://your-domain/ws/chat/{room_id}/?token={jwt_access_token}
+\`\`\`
+
+⚠️ Passing the JWT as a query parameter is a known tradeoff — see
+TECH_DEBT.md for the security note on this pattern.
+
+### Sending a message
+
+\`\`\`json
+{"message": "Hello!"}
+\`\`\`
+
+### Receiving a message
+
+\`\`\`json
+{
+  "message_id": 42,
+  "sender_id": 3,
+  "sender_email": "freelancer1@example.com",
+  "content": "Hello!",
+  "created_at": "2026-01-01T12:00:00Z"
+}
+\`\`\`
+
+### REST Fallback
+
+| Method | Endpoint | Purpose |
+|---|---|---|
+| GET | \`/api/v1/chat/{room_id}/messages/\` | Paginated message history |
+| POST | \`/api/v1/chat/{room_id}/mark-read/\` | Mark received messages as read |
+
+### Chat Rooms
+
+One chat room is automatically created per contract when a proposal is
+accepted. There is no standalone/global chat — all messaging is tied to
+an active contract.
