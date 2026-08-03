@@ -173,3 +173,5 @@ CHANNEL_LAYERS = {
         },
     },
 }
+
+TELEGRAM_BOT_TOKEN = env("TELEGRAM_BOT_TOKEN", default="")
