@@ -2,6 +2,8 @@ import logging
 from celery import shared_task
 from django.core.mail import send_mail
 from django.conf import settings
+from redis import asyncio
+from telegram import Bot
 
 logger = logging.getLogger(__name__)
 
@@ -76,5 +78,38 @@ def send_contract_delivered_email(self, contract_id):
             recipient_list=[contract.client.email],
         )
         logger.info(f"Sent contract-delivered email for contract {contract_id}")
+    except Exception as exc:
+        raise self.retry(exc=exc)
+
+@shared_task(bind=True, max_retries=3, retry_backoff=True)
+def send_telegram_notification(self, user_id, message_text):
+    from apps.accounts.models import CustomUser
+    from .models import TelegramLink, NotificationPreference
+
+    try:
+        user = CustomUser.objects.get(id=user_id)
+    except CustomUser.DoesNotExist:
+        logger.warning(f"send_telegram_notification: user {user_id} not found.")
+        return
+
+    try:
+        pref = user.notification_preference
+    except NotificationPreference.DoesNotExist:
+        return
+
+    if not pref.telegram_enabled:
+        logger.info(f"Telegram notifications disabled for user {user_id}. Skipping.")
+        return
+
+    try:
+        link = user.telegram_link
+    except TelegramLink.DoesNotExist:
+        logger.info(f"User {user_id} has telegram_enabled but no linked account. Skipping.")
+        return
+
+    try:
+        bot = Bot(token=settings.TELEGRAM_BOT_TOKEN)
+        asyncio.run(bot.send_message(chat_id=link.chat_id, text=message_text))
+        logger.info(f"Telegram message sent to user {user_id}")
     except Exception as exc:
         raise self.retry(exc=exc)

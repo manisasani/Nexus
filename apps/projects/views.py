@@ -3,7 +3,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
-from apps.notifications.tasks import send_new_proposal_email
+from apps.notifications.tasks import send_new_proposal_email, send_telegram_notification
 from apps.notifications.models import Notification
 
 
@@ -142,6 +142,11 @@ class ProposalViewSet(viewsets.ModelViewSet):
         )
 
         send_new_proposal_email.delay(proposal.id)
+
+        send_telegram_notification.delay(
+            proposal.project.owner.id,
+            f"📩 New proposal from {proposal.freelancer.email} on '{proposal.project.title}'"
+        )
 
     @extend_schema(
         summary="Accept a proposal",
