@@ -3,7 +3,6 @@ from venv import logger
 from rest_framework import viewsets, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from twisted import logger
 from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
 from apps.notifications.tasks import send_new_proposal_email, send_telegram_notification
@@ -30,6 +29,9 @@ from drf_spectacular.utils import (
 from apps.contracts.services import ProposalService
 from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework.exceptions import ValidationError, PermissionDenied
+
+import logging
+logger = logging.getLogger(__name__)
 
 @extend_schema(
     tags=["Projects"],

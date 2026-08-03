@@ -2,7 +2,7 @@ import logging
 from celery import shared_task
 from django.core.mail import send_mail
 from django.conf import settings
-from redis import asyncio
+import asyncio
 from telegram import Bot
 from django.utils import timezone
 from datetime import timedelta
@@ -102,7 +102,11 @@ def send_telegram_notification(self, user_id, message_text):
     if not pref.telegram_enabled:
         logger.info(f"Telegram notifications disabled for user {user_id}. Skipping.")
         return
-
+    
+    if not settings.TELEGRAM_BOT_TOKEN:
+        logger.info("TELEGRAM_BOT_TOKEN not configured. Skipping Telegram send.")
+        return
+    
     try:
         link = user.telegram_link
     except TelegramLink.DoesNotExist:

@@ -42,7 +42,7 @@ class NotificationPreference(models.Model):
     telegram_enabled = models.BooleanField(default=False)
     sms_enabled = models.BooleanField(default=False)
     in_app_enabled = models.BooleanField(default=True)
-    digest_mode = models.BooleanField(default=False)  # اگه True، فقط خلاصهٔ هفتگی، نه هر رویداد جدا
+    digest_mode = models.BooleanField(default=False)  
 
     def __str__(self):
         return f"Preferences for {self.user.email}"

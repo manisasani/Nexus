@@ -173,5 +173,9 @@ CHANNEL_LAYERS = {
         },
     },
 }
-
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
+    },
+}
 TELEGRAM_BOT_TOKEN = env("TELEGRAM_BOT_TOKEN", default="")
