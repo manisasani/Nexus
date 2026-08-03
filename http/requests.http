@@ -379,3 +379,7 @@ Content-Type: application/json
   "status": "RESOLVED",
   "resolution": "Payment was confirmed and applied correctly."
 }
+
+### Get Telegram Link Code
+POST http://127.0.0.1:8000/api/v1/notifications/telegram/link-code/
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzg1ODM5MDU0LCJpYXQiOjE3ODU4MzgxNTQsImp0aSI6IjhiYWFmNTA5MjgyNTRhMmE4ZGY0NjJlNjNjODFjODI5IiwidXNlcl9pZCI6IjIifQ.Uaa5_LhkjCWTH6IHqAdENKbWnzMxI0GbcR9sD4L3c0Q
