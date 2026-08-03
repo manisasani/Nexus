@@ -20,4 +20,8 @@ app.conf.beat_schedule = {
         "task": "apps.accounts.tasks.purge_expired_otps",
         "schedule": crontab(minute=0),  
     },
+    "send-weekly-digest": {
+        "task": "apps.notifications.tasks.send_weekly_digest",
+        "schedule": crontab(day_of_week=1, hour=9, minute=0),  
+    },
 }
