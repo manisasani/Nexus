@@ -33,3 +33,16 @@ class TelegramLink(models.Model):
 
     def __str__(self):
         return f"Telegram link for {self.user.email}"
+
+class NotificationPreference(models.Model):
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL, related_name="notification_preference", on_delete=models.CASCADE
+    )
+    email_enabled = models.BooleanField(default=True)
+    telegram_enabled = models.BooleanField(default=False)
+    sms_enabled = models.BooleanField(default=False)
+    in_app_enabled = models.BooleanField(default=True)
+    digest_mode = models.BooleanField(default=False)  # اگه True، فقط خلاصهٔ هفتگی، نه هر رویداد جدا
+
+    def __str__(self):
+        return f"Preferences for {self.user.email}"

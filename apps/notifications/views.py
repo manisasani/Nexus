@@ -3,8 +3,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from .services.telegram_link_service import TelegramLinkService
 
-from .models import Notification
-from .serializers import NotificationsSerializer
+from .models import Notification, NotificationPreference
+from .serializers import NotificationPreferenceSerializer, NotificationsSerializer
 
 class MyNotificationsView(generics.ListAPIView):
     serializer_class = NotificationsSerializer
@@ -22,3 +22,11 @@ class GenerateTelegramLinkCodeView(APIView):
             "code": code,
             "instructions": "Send this code to the Nexus Telegram bot within 10 minutes.",
         }, status=status.HTTP_200_OK)
+
+class MyNotificationPreferenceView(generics.RetrieveUpdateAPIView):
+    serializer_class = NotificationPreferenceSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_object(self):
+        pref, _ = NotificationPreference.objects.get_or_create(user=self.request.user)
+        return pref
