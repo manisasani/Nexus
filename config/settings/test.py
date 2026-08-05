@@ -21,6 +21,10 @@ CACHES = {
     }
 }
 
+REST_FRAMEWORK = {
+    **globals().get("REST_FRAMEWORK", {}),
+}
+
 CELERY_TASK_ALWAYS_EAGER = True
 CELERY_TASK_EAGER_PROPAGATES = True
 
@@ -28,3 +32,4 @@ CELERY_TASK_EAGER_PROPAGATES = True
 EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
 
 SMS_BACKEND = "console"
+TELEGRAM_BOT_TOKEN = ""

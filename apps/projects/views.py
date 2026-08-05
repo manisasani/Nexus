@@ -1,9 +1,11 @@
+from venv import logger
+
 from rest_framework import viewsets, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
-from apps.notifications.tasks import send_new_proposal_email
+from apps.notifications.tasks import send_new_proposal_email, send_telegram_notification
 from apps.notifications.models import Notification
 
 
@@ -27,6 +29,9 @@ from drf_spectacular.utils import (
 from apps.contracts.services import ProposalService
 from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework.exceptions import ValidationError, PermissionDenied
+
+import logging
+logger = logging.getLogger(__name__)
 
 @extend_schema(
     tags=["Projects"],
@@ -142,6 +147,20 @@ class ProposalViewSet(viewsets.ModelViewSet):
         )
 
         send_new_proposal_email.delay(proposal.id)
+
+        pref = getattr(proposal.project.owner, "notification_preference", None)
+
+        if pref and (not pref.telegram_enabled or pref.digest_mode):
+            logger.info(
+                f"Telegram immediate notifications skipped for user {proposal.project.owner.id} "
+                "(disabled or digest mode)."
+            )
+            return
+
+        send_telegram_notification.delay(
+            proposal.project.owner.id,
+            f"📩 New proposal from {proposal.freelancer.email} on '{proposal.project.title}'"
+        )
 
     @extend_schema(
         summary="Accept a proposal",

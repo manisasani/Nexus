@@ -22,3 +22,27 @@ class Notification(models.Model):
 
     def __str__(self):
         return f"{self.notification_type} -> {self.recipient.email}"
+
+
+class TelegramLink(models.Model):
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL, related_name="telegram_link", on_delete=models.CASCADE
+    )
+    chat_id = models.BigIntegerField(unique=True)
+    linked_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Telegram link for {self.user.email}"
+
+class NotificationPreference(models.Model):
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL, related_name="notification_preference", on_delete=models.CASCADE
+    )
+    email_enabled = models.BooleanField(default=True)
+    telegram_enabled = models.BooleanField(default=False)
+    sms_enabled = models.BooleanField(default=False)
+    in_app_enabled = models.BooleanField(default=True)
+    digest_mode = models.BooleanField(default=False)  
+
+    def __str__(self):
+        return f"Preferences for {self.user.email}"

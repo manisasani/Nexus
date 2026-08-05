@@ -702,3 +702,40 @@ TECH_DEBT.md for the security note on this pattern.
 One chat room is automatically created per contract when a proposal is
 accepted. There is no standalone/global chat — all messaging is tied to
 an active contract.
+
+## Telegram Bot & Notification Preferences (Phase 15)
+
+### Linking Your Account
+
+1. `POST /api/v1/notifications/telegram/link-code/` (authenticated) → returns a 6-digit code, valid for 10 minutes.
+2. Open the Nexus Telegram bot, send the code as a message.
+3. The bot verifies the code and links your Telegram chat — `chat_id` is
+   never accepted from any Nexus API endpoint, only from Telegram itself.
+
+### Notification Preferences
+
+`GET/PATCH /api/v1/notifications/preferences/`
+
+| Field | Default | Description |
+|---|---|---|
+| `email_enabled` | `true` | Email notifications |
+| `telegram_enabled` | `false` | Telegram notifications (opt-in) |
+| `sms_enabled` | `false` | Reserved for future SMS notifications |
+| `in_app_enabled` | `true` | In-app notification inbox |
+| `digest_mode` | `false` | If true, receive a weekly summary instead of per-event Telegram messages |
+
+### Running the Bot
+
+The Telegram bot runs as a **separate process**, not inside the web
+server:
+
+\`\`\`bash
+python manage.py run_telegram_bot
+\`\`\`
+
+In Docker Compose, this runs as its own service — see `docker-compose.yml`.
+
+### Weekly Digest
+
+Runs every Monday at 09:00 via Celery Beat, only for users with
+`digest_mode=True`.

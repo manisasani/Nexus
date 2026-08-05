@@ -302,3 +302,29 @@ before scaling chat horizontally.
 ## 29. No typing indicators or online presence
 
 **Status:** Intentionally postponed — not required for MVP chat.
+
+## 30. SMS channel not yet implemented
+
+**Issue:** `sms_enabled` field exists in `NotificationPreference` but no
+SMS delivery task exists — reserved for future integration with the
+Phase 11 OTP SMS provider.
+
+**Status:** Intentionally postponed.
+
+## 31. No unlink/re-link flow for Telegram
+
+**Issue:** Users can link a Telegram account but there's no explicit
+"unlink" endpoint. Re-linking (via a new code) overwrites the existing
+`chat_id` via `update_or_create`, but there's no way to fully disconnect
+without disabling the preference.
+
+**Status:** Acceptable for MVP. Add explicit unlink endpoint if needed.
+
+## 32. Telegram bot polling vs webhook tradeoff
+
+**Issue:** Bot uses polling mode (simpler for local/single-instance dev)
+rather than webhooks. Polling has slightly higher latency and doesn't
+scale as cleanly as webhook mode for high message volume.
+
+**Status:** Acceptable for current scale. Revisit webhook mode if
+message volume grows significantly.

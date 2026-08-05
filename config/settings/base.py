@@ -149,11 +149,11 @@ SPECTACULAR_SETTINGS = {
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": env("REDIS_URL", default="redis://redis:6379/0"),
+        "LOCATION": env("REDIS_URL_CACHE", default="redis://redis:6379/1"),
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         },
-    }
+    },
 }
 
 CELERY_BROKER_URL = env("REDIS_URL_CELERY", default="redis://redis:6379/1")
@@ -169,7 +169,13 @@ CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [env("REDIS_URL_CHANNELS", default="redis://redis:6379/2")],
+            "hosts": [
+                env(
+                    "REDIS_URL_CHANNELS",
+                    default="redis://127.0.0.1:6379/2"
+                )
+            ],
         },
     },
 }
+TELEGRAM_BOT_TOKEN = env("TELEGRAM_BOT_TOKEN", default="")
