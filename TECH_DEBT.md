@@ -328,3 +328,14 @@ scale as cleanly as webhook mode for high message volume.
 
 **Status:** Acceptable for current scale. Revisit webhook mode if
 message volume grows significantly.
+
+## 33. Full-project lint/format not yet applied
+
+**Issue:** Ruff/Black were introduced in Phase 16 but existing apps
+(accounts, core, projects, contracts, wallets, notifications, tickets,
+chat, config) are excluded from lint checks to avoid a massive
+non-functional reformat commit.
+
+**Status:** Intentional. New apps/files going forward must pass lint.
+Existing code should be reformatted in a separate, isolated PR with no
+logic changes.

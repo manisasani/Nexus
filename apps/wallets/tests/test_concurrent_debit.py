@@ -1,11 +1,17 @@
 import pytest
+import os
 import threading
 from django.db import connections
 from apps.accounts.factories import ClientFactory
 from apps.wallets.models import Wallet, LedgerEntry
 from apps.wallets.services import WalletService
 
+skip_unless_ci = pytest.mark.skipif(
+    os.environ.get("CI") != "true",
+    reason="Requires real PostgreSQL row-level locking; run only in CI environment.",
+)
 
+@skip_unless_ci
 @pytest.mark.django_db(transaction=True)
 class TestConcurrentDebit:
     @pytest.mark.skip(reason="SQLite threading/locking behavior unreliable for this test; verify against PostgreSQL directly")
