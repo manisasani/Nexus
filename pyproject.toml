@@ -1,0 +1,38 @@
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+exclude = [
+    "migrations",
+    "venv",
+    "apps/accounts",
+    "apps/core",
+    "apps/projects",
+    "apps/contracts",
+    "apps/wallets",
+    "apps/notifications",
+    "apps/tickets",
+    "apps/chat",
+    "config",
+]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+ignore = ["E501"]
+
+[tool.black]
+line-length = 100
+target-version = ["py312"]
+extend-exclude = '''
+(
+  migrations
+  | apps/accounts
+  | apps/core
+  | apps/projects
+  | apps/contracts
+  | apps/wallets
+  | apps/notifications
+  | apps/tickets
+  | apps/chat
+  | config
+)
+'''
