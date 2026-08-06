@@ -1,11 +1,18 @@
 import pytest
+import os
 import threading
 from apps.projects.factories import OpenProjectFactory, ProposalFactory
 from apps.contracts.services import ProposalService
 from apps.contracts.models import Contract
 from django.db import connections
 
+skip_unless_ci = pytest.mark.skipif(
+    os.environ.get("CI") != "true",
+    reason="Requires real PostgreSQL row-level locking; run only in CI environment.",
+)
 
+
+@skip_unless_ci
 @pytest.mark.django_db(transaction=True)  
 class TestAcceptRaceCondition:
     @pytest.mark.skip(reason="SQLite threading behavior unreliable for this test; verify against PostgreSQL directly")
