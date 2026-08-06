@@ -739,3 +739,24 @@ In Docker Compose, this runs as its own service — see `docker-compose.yml`.
 
 Runs every Monday at 09:00 via Celery Beat, only for users with
 `digest_mode=True`.
+
+## Continuous Integration (Phase 16)
+
+Every pull request to `dev` or `main` automatically runs:
+
+1. **Lint** — `ruff check .` and `black --check .`
+2. **Tests** — full pytest suite against a real PostgreSQL and Redis service container (matching production, not SQLite)
+3. **Docker build** — verifies the production image still builds
+
+### Branch Protection
+
+The CI workflow is fully implemented and operational.
+
+A branch protection rule for the `main` branch will be enabled after the repository configuration is finalized to require passing CI checks before merging.
+
+### Running checks locally (before pushing)
+
+```bash
+ruff check . --fix
+black .
+pytest
