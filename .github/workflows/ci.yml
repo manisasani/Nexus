@@ -87,3 +87,14 @@ jobs:
 
       - name: Run pytest
         run: pytest --create-db
+        
+  docker-build:
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t nexus:ci-test .
